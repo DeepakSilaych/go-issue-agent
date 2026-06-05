@@ -29,6 +29,7 @@ if env_file.exists():
 PROVIDER_DEFAULTS = {
     "anthropic": "claude-sonnet-4-6",
     "groq":      "llama-3.3-70b-versatile",
+    "azure":     "gpt-4o",          # overridden by AZURE_OPENAI_DEPLOYMENT if set
 }
 
 
@@ -48,7 +49,7 @@ PROVIDER_DEFAULTS = {
     "--provider",
     default="anthropic",
     show_default=True,
-    type=click.Choice(["anthropic", "groq"], case_sensitive=False),
+    type=click.Choice(["anthropic", "groq", "azure"], case_sensitive=False),
     help="LLM provider.",
 )
 @click.option(
@@ -92,14 +93,25 @@ def main(issue: str, repo: str, provider: str, model: str, workspace: str, outpu
     resolved_model = model or PROVIDER_DEFAULTS[provider]
 
     # Validate required API keys
-    key_map = {"anthropic": "ANTHROPIC_API_KEY", "groq": "GROQ_API_KEY"}
-    required_key = key_map[provider]
-    if not os.environ.get(required_key):
-        click.echo(
-            f"Error: {required_key} is not set.\n"
-            f"Add it to your .env file or export it in your shell.",
-            err=True,
-        )
+    key_map = {
+        "anthropic": ("ANTHROPIC_API_KEY", None),
+        "groq":      ("GROQ_API_KEY", None),
+        "azure":     ("AZURE_OPENAI_API_KEY", "AZURE_OPENAI_ENDPOINT"),
+    }
+    required_keys = key_map[provider]
+    missing = [k for k in required_keys if k and not os.environ.get(k)]
+    if missing:
+        for k in missing:
+            click.echo(f"Error: {k} is not set. Add it to your .env file.", err=True)
+        if provider == "azure":
+            click.echo(
+                "\nAzure requires:\n"
+                "  AZURE_OPENAI_API_KEY      — your key\n"
+                "  AZURE_OPENAI_ENDPOINT     — https://<resource>.openai.azure.com/\n"
+                "  AZURE_OPENAI_DEPLOYMENT   — deployment name (e.g. gpt-4o)\n"
+                "  AZURE_OPENAI_API_VERSION  — optional, default 2024-02-01",
+                err=True,
+            )
         sys.exit(1)
 
     from agent.github_client import fetch_issue
