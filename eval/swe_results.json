@@ -1,0 +1,539 @@
+{
+  "aggregate": {
+    "cases": 27,
+    "completed": 27,
+    "errors": 0,
+    "produced_fix_rate": 1.0,
+    "localized_rate": 0.926,
+    "exact_file_set_rate": 0.667,
+    "mean_file_recall": 0.809,
+    "mean_file_precision": 0.901
+  },
+  "cases": [
+    {
+      "issue_number": 2257,
+      "pr_number": 2356,
+      "subject": "fix: prevent completions from mutating os.Args via append side effect (#2356)",
+      "gold_src_files": [
+        "completions.go"
+      ],
+      "our_src_files": [
+        "completions.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 1749,
+      "gold_diff_bytes": 2882,
+      "status": "ok"
+    },
+    {
+      "issue_number": 2060,
+      "pr_number": 2061,
+      "subject": "Don't complete --help flag when flag parsing disabled (#2061)",
+      "gold_src_files": [
+        "completions.go"
+      ],
+      "our_src_files": [
+        "completions.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 1510,
+      "gold_diff_bytes": 4256,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1853,
+      "pr_number": 1960,
+      "subject": "powershell: escape variable with curly brackets (#1960)",
+      "gold_src_files": [
+        "powershell_completions.go"
+      ],
+      "our_src_files": [
+        "bash_completions.go",
+        "bash_completionsV2.go",
+        "powershell_completions.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 0.333,
+      "exact_file_set": false,
+      "produced_fix": true,
+      "our_diff_bytes": 4291,
+      "gold_diff_bytes": 1778,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1849,
+      "pr_number": 1916,
+      "subject": "Add support for PowerShell 7.2+ (#1916)",
+      "gold_src_files": [
+        "powershell_completions.go"
+      ],
+      "our_src_files": [
+        "powershell_completions.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 1725,
+      "gold_diff_bytes": 1451,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1816,
+      "pr_number": 1817,
+      "subject": "completions: do not detect arguments with dash as 2nd char as flag (#1817)",
+      "gold_src_files": [
+        "command.go"
+      ],
+      "our_src_files": [
+        "command.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 1891,
+      "gold_diff_bytes": 2274,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1847,
+      "pr_number": 1850,
+      "subject": "fix: force ForEach-Object to return array in pwsh completion (#1850)",
+      "gold_src_files": [
+        "powershell_completions.go"
+      ],
+      "our_src_files": [
+        "powershell_completions.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 1759,
+      "gold_diff_bytes": 509,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1831,
+      "pr_number": 1839,
+      "subject": "Check for group presence after full initialization (#1839)",
+      "gold_src_files": [
+        "command.go"
+      ],
+      "our_src_files": [
+        "command.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 615,
+      "gold_diff_bytes": 5579,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1786,
+      "pr_number": 1813,
+      "subject": "Include --help and --version flag in completion (#1813)",
+      "gold_src_files": [
+        "command.go",
+        "completions.go"
+      ],
+      "our_src_files": [
+        "completions.go"
+      ],
+      "localized": true,
+      "file_recall": 0.5,
+      "file_precision": 1.0,
+      "exact_file_set": false,
+      "produced_fix": true,
+      "our_diff_bytes": 3363,
+      "gold_diff_bytes": 13645,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1382,
+      "pr_number": 1802,
+      "subject": "Support for case-insensitive command names (#1802)",
+      "gold_src_files": [
+        "cobra.go",
+        "command.go"
+      ],
+      "our_src_files": [
+        "command.go"
+      ],
+      "localized": true,
+      "file_recall": 0.5,
+      "file_precision": 1.0,
+      "exact_file_set": false,
+      "produced_fix": true,
+      "our_diff_bytes": 6302,
+      "gold_diff_bytes": 6453,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1734,
+      "pr_number": 1735,
+      "subject": "Fix handling of descriptions for bash v3 (#1735)",
+      "gold_src_files": [
+        "bash_completionsV2.go"
+      ],
+      "our_src_files": [
+        "bash_completionsV2.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 1730,
+      "gold_diff_bytes": 514,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1562,
+      "pr_number": 1563,
+      "subject": "Remove __complete cmd for program without subcmds (#1563)",
+      "gold_src_files": [
+        "completions.go"
+      ],
+      "our_src_files": [
+        "completions.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 2918,
+      "gold_diff_bytes": 2769,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1507,
+      "pr_number": 1541,
+      "subject": "Provide option to hide default 'completion' cmd (#1541)",
+      "gold_src_files": [
+        "completions.go"
+      ],
+      "our_src_files": [
+        "completions.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 2384,
+      "gold_diff_bytes": 1673,
+      "status": "ok"
+    },
+    {
+      "issue_number": 879,
+      "pr_number": 880,
+      "subject": "Remove \"Lesser\" from header for GPL-2.0 template (#880)",
+      "gold_src_files": [
+        "cobra/cmd/license_gpl_2.go"
+      ],
+      "our_src_files": [
+        "cobra/cmd/license_gpl_2.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 672,
+      "gold_diff_bytes": 672,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1437,
+      "pr_number": 1438,
+      "subject": "Fix flag completion (#1438)",
+      "gold_src_files": [
+        "bash_completions.go",
+        "command.go",
+        "completions.go",
+        "fish_completions.go"
+      ],
+      "our_src_files": [
+        "bash_completions.go",
+        "completions.go"
+      ],
+      "localized": true,
+      "file_recall": 0.5,
+      "file_precision": 1.0,
+      "exact_file_set": false,
+      "produced_fix": true,
+      "our_diff_bytes": 4827,
+      "gold_diff_bytes": 6186,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1303,
+      "pr_number": 1249,
+      "subject": "Fix multiple fish completion issues (#1249)",
+      "gold_src_files": [
+        "fish_completions.go"
+      ],
+      "our_src_files": [
+        "fish_completions.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 1049,
+      "gold_diff_bytes": 11477,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1211,
+      "pr_number": 1213,
+      "subject": "Fix zsh for DirectiveNoSpace and DirectiveNoFileComp (#1213)",
+      "gold_src_files": [
+        "completions.go",
+        "zsh_completions.go"
+      ],
+      "our_src_files": [
+        "zsh_completions.go"
+      ],
+      "localized": true,
+      "file_recall": 0.5,
+      "file_precision": 1.0,
+      "exact_file_set": false,
+      "produced_fix": true,
+      "our_diff_bytes": 4806,
+      "gold_diff_bytes": 4215,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1257,
+      "pr_number": 1258,
+      "subject": "Custom completion handle multiple shorhand flags together (#1258)",
+      "gold_src_files": [
+        "completions.go"
+      ],
+      "our_src_files": [
+        "completions.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 2847,
+      "gold_diff_bytes": 4617,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1362,
+      "pr_number": 1363,
+      "subject": "powershell completion fix no file comp directive (#1363)",
+      "gold_src_files": [
+        "powershell_completions.go"
+      ],
+      "our_src_files": [
+        "powershell_completions.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 1708,
+      "gold_diff_bytes": 1688,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1170,
+      "pr_number": 1171,
+      "subject": "Complete subcommands when TraverseChildren is set (#1171)",
+      "gold_src_files": [
+        "bash_completions.go",
+        "custom_completions.go"
+      ],
+      "our_src_files": [
+        "custom_completions.go"
+      ],
+      "localized": true,
+      "file_recall": 0.5,
+      "file_precision": 1.0,
+      "exact_file_set": false,
+      "produced_fix": true,
+      "our_diff_bytes": 3629,
+      "gold_diff_bytes": 8421,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1121,
+      "pr_number": 1122,
+      "subject": "Fish does not accept - or : in vars (#1122)",
+      "gold_src_files": [
+        "fish_completions.go"
+      ],
+      "our_src_files": [
+        "fish_completions.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 617,
+      "gold_diff_bytes": 6932,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1000,
+      "pr_number": 1136,
+      "subject": "Add completion for help command (#1136)",
+      "gold_src_files": [
+        "bash_completions.go",
+        "command.go",
+        "custom_completions.go"
+      ],
+      "our_src_files": [
+        "bash_completions.go"
+      ],
+      "localized": true,
+      "file_recall": 0.333,
+      "file_precision": 1.0,
+      "exact_file_set": false,
+      "produced_fix": true,
+      "our_diff_bytes": 1336,
+      "gold_diff_bytes": 4847,
+      "status": "ok"
+    },
+    {
+      "issue_number": 1002,
+      "pr_number": 1004,
+      "subject": "Revert change so help is printed on stdout again (#1004)",
+      "gold_src_files": [
+        "command.go"
+      ],
+      "our_src_files": [
+        "command.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 1356,
+      "gold_diff_bytes": 491,
+      "status": "ok"
+    },
+    {
+      "issue_number": 805,
+      "pr_number": 977,
+      "subject": "Update md2man to v2.0.0 (#977)",
+      "gold_src_files": [
+        "doc/man_docs.go"
+      ],
+      "our_src_files": [],
+      "localized": false,
+      "file_recall": 0.0,
+      "file_precision": 0.0,
+      "exact_file_set": false,
+      "produced_fix": true,
+      "our_diff_bytes": 1474,
+      "gold_diff_bytes": 3121,
+      "status": "ok"
+    },
+    {
+      "issue_number": 556,
+      "pr_number": null,
+      "subject": "Make rootCmd private",
+      "gold_src_files": [
+        "cobra/cmd/add.go",
+        "cobra/cmd/init.go"
+      ],
+      "our_src_files": [
+        "cobra/cmd/add.go",
+        "cobra/cmd/init.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 4711,
+      "gold_diff_bytes": 9550,
+      "status": "ok"
+    },
+    {
+      "issue_number": 107,
+      "pr_number": null,
+      "subject": "Add basic zsh completion (command hierarchy only)",
+      "gold_src_files": [
+        "zsh_completions.go"
+      ],
+      "our_src_files": [],
+      "localized": false,
+      "file_recall": 0.0,
+      "file_precision": 0.0,
+      "exact_file_set": false,
+      "produced_fix": true,
+      "our_diff_bytes": 1472,
+      "gold_diff_bytes": 4908,
+      "status": "ok"
+    },
+    {
+      "issue_number": 503,
+      "pr_number": null,
+      "subject": "Fix reproducibility in TestGolden{Add,Init}Cmd",
+      "gold_src_files": [
+        "cobra/cmd/licenses.go"
+      ],
+      "our_src_files": [
+        "cobra/cmd/licenses.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 2266,
+      "gold_diff_bytes": 1780,
+      "status": "ok"
+    },
+    {
+      "issue_number": 383,
+      "pr_number": null,
+      "subject": "Add ability to disable mousetrap",
+      "gold_src_files": [
+        "cobra.go",
+        "command_win.go"
+      ],
+      "our_src_files": [
+        "cobra.go",
+        "command_win.go"
+      ],
+      "localized": true,
+      "file_recall": 1.0,
+      "file_precision": 1.0,
+      "exact_file_set": true,
+      "produced_fix": true,
+      "our_diff_bytes": 1435,
+      "gold_diff_bytes": 1330,
+      "status": "ok"
+    }
+  ]
+}
