@@ -2,13 +2,19 @@
 """
 go-issue-agent: Agentic AI contributor for open-source Go projects.
 
-Usage:
-    # Anthropic (default)
-    python solve.py --issue https://github.com/spf13/cobra/issues/2396
+Three modes:
 
-    # Groq (free tier)
-    python solve.py --issue 2396 --provider groq
-    python solve.py --issue 2396 --provider groq --model llama-3.3-70b-versatile
+    # 1) EXPLAIN — explain the issue and the proposed solution (no code changes)
+    python solve.py explain --issue https://github.com/spf13/cobra/issues/2396
+
+    # 2) IMPLEMENT — localize, plan, patch, validate, write a PR summary
+    python solve.py implement --issue https://github.com/spf13/cobra/issues/2396
+    python solve.py implement --issue 2396 --guidance "use a three-index slice instead of copy"
+
+    # 3) REVIEW — review a pull request against its issue + project conventions
+    python solve.py review --pr https://github.com/spf13/cobra/pull/2356
+
+Providers: anthropic (default) | groq | azure.
 """
 
 import os
@@ -34,121 +40,144 @@ PROVIDER_DEFAULTS = {
 }
 
 
-@click.command()
-@click.option(
-    "--issue",
-    required=True,
-    help="GitHub issue URL (https://github.com/owner/repo/issues/N) or bare number.",
-)
-@click.option(
-    "--repo",
-    default="spf13/cobra",
-    show_default=True,
-    help="GitHub repo (owner/name). Used when --issue is a bare number.",
-)
-@click.option(
-    "--provider",
-    default="anthropic",
-    show_default=True,
-    type=click.Choice(["anthropic", "groq", "azure"], case_sensitive=False),
-    help="LLM provider.",
-)
-@click.option(
-    "--model",
-    default=None,
-    help=(
-        "Model name. Defaults: anthropic=claude-sonnet-4-6, "
-        "groq=llama-3.3-70b-versatile."
-    ),
-)
-@click.option(
-    "--workspace",
-    default="./workspace",
-    show_default=True,
-    help="Directory where repos are cloned.",
-)
-@click.option(
-    "--output",
-    default="./output",
-    show_default=True,
-    help="Directory for output artifacts (diff, PR summary, JSON).",
-)
-@click.option(
-    "--base-commit",
-    default=None,
-    help="Solve the issue at this commit/ref (the repo state BEFORE the fix landed). "
-         "Use for fair, SWE-bench-style evaluation against an already-merged issue.",
-)
-def main(issue: str, repo: str, provider: str, model: str, workspace: str, output: str,
-         base_commit: str):
-    """
-    Solve a GitHub issue from an open-source Go project.
-
-    \b
-    Phases:
-      1. Localize  — identify relevant files from repo map + issue
-      2. Plan      — generate a targeted fix strategy
-      3. Patch     — implement the fix (tool-use loop: read, edit, test)
-      4. Validate  — run go test, generate PR title + body
-
-    \b
-    Output (output/issue-{N}/):
-      pr_summary.md   PR title and body
-      changes.patch   git diff of the changes
-      result.json     full structured result
-    """
+def _resolve_model(provider: str, model: str) -> str:
     provider = provider.lower()
-    # For Azure, the "model" is the deployment name; default to AZURE_OPENAI_DEPLOYMENT.
     if provider == "azure":
-        resolved_model = model or os.environ.get("AZURE_OPENAI_DEPLOYMENT") or PROVIDER_DEFAULTS[provider]
-    else:
-        resolved_model = model or PROVIDER_DEFAULTS[provider]
+        return model or os.environ.get("AZURE_OPENAI_DEPLOYMENT") or PROVIDER_DEFAULTS[provider]
+    return model or PROVIDER_DEFAULTS[provider]
 
-    # Validate required API keys
+
+def _check_keys(provider: str):
+    """Exit with a helpful message if the provider's required env vars are missing."""
     key_map = {
         "anthropic": ("ANTHROPIC_API_KEY", None),
         "groq":      ("GROQ_API_KEY", None),
         "azure":     ("AZURE_OPENAI_API_KEY", "AZURE_OPENAI_ENDPOINT"),
     }
-    required_keys = key_map[provider]
-    missing = [k for k in required_keys if k and not os.environ.get(k)]
+    missing = [k for k in key_map[provider] if k and not os.environ.get(k)]
     if missing:
         for k in missing:
             click.echo(f"Error: {k} is not set. Add it to your .env file.", err=True)
         if provider == "azure":
             click.echo(
-                "\nAzure requires:\n"
-                "  AZURE_OPENAI_API_KEY      — your key\n"
-                "  AZURE_OPENAI_ENDPOINT     — https://<resource>.openai.azure.com/\n"
-                "  AZURE_OPENAI_DEPLOYMENT   — deployment name (e.g. gpt-4o)\n"
-                "  AZURE_OPENAI_API_VERSION  — optional, default 2024-02-01",
-                err=True,
+                "\nAzure requires AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, and "
+                "AZURE_OPENAI_DEPLOYMENT (the deployment name).", err=True,
             )
         sys.exit(1)
+
+
+def _llm_options(f):
+    """Shared --provider/--model/--workspace/--output options."""
+    f = click.option("--provider", default="anthropic", show_default=True,
+                     type=click.Choice(["anthropic", "groq", "azure"], case_sensitive=False),
+                     help="LLM provider.")(f)
+    f = click.option("--model", default=None,
+                     help="Model name (or Azure deployment). Provider-specific default.")(f)
+    f = click.option("--workspace", default="./workspace", show_default=True,
+                     help="Directory where repos are cloned.")(f)
+    f = click.option("--output", default="./output", show_default=True,
+                     help="Directory for output artifacts.")(f)
+    return f
+
+
+@click.group()
+def cli():
+    """Agentic assistant for open-source Go issues: explain, implement, or review."""
+
+
+# ---------------------------------------------------------------------------
+# explain
+# ---------------------------------------------------------------------------
+@cli.command()
+@click.option("--issue", required=True, help="GitHub issue URL or number.")
+@click.option("--repo", default="spf13/cobra", show_default=True, help="owner/name (for bare numbers).")
+@click.option("--base-commit", default=None, help="Analyze at this commit (pre-fix state).")
+@_llm_options
+def explain(issue, repo, base_commit, provider, model, workspace, output):
+    """Explain a GitHub issue and the proposed solution (no code changes)."""
+    provider = provider.lower()
+    resolved = _resolve_model(provider, model)
+    _check_keys(provider)
+
+    from agent.github_client import fetch_issue
+    from agent.pipeline import explain_issue
+
+    click.echo(f"[explain] Provider: {provider}  Model: {resolved}")
+    issue_obj = _fetch_issue_or_exit(fetch_issue, issue, repo)
+    _run(lambda: explain_issue(issue_obj, clone_dir=workspace, output_dir=output,
+                               provider=provider, model=resolved, base_commit=base_commit))
+
+
+# ---------------------------------------------------------------------------
+# implement
+# ---------------------------------------------------------------------------
+@cli.command()
+@click.option("--issue", required=True, help="GitHub issue URL or number.")
+@click.option("--repo", default="spf13/cobra", show_default=True, help="owner/name (for bare numbers).")
+@click.option("--base-commit", default=None, help="Solve at this commit (pre-fix state, fair eval).")
+@click.option("--guidance", default=None, help="Steer toward a preferred/modified solution.")
+@_llm_options
+def implement(issue, repo, base_commit, guidance, provider, model, workspace, output):
+    """Localize, plan, patch, validate, and write a PR summary."""
+    provider = provider.lower()
+    resolved = _resolve_model(provider, model)
+    _check_keys(provider)
 
     from agent.github_client import fetch_issue
     from agent.pipeline import run_issue
 
-    click.echo(f"Provider: {provider}  Model: {resolved_model}")
+    click.echo(f"[implement] Provider: {provider}  Model: {resolved}")
+    issue_obj = _fetch_issue_or_exit(fetch_issue, issue, repo)
+    _run(lambda: run_issue(issue_obj, clone_dir=workspace, output_dir=output,
+                           provider=provider, model=resolved,
+                           base_commit=base_commit, guidance=guidance))
+
+
+# ---------------------------------------------------------------------------
+# review
+# ---------------------------------------------------------------------------
+@cli.command()
+@click.option("--pr", "pr_ref", required=True, help="GitHub PR URL or number.")
+@click.option("--repo", default="spf13/cobra", show_default=True, help="owner/name (for bare numbers).")
+@_llm_options
+def review(pr_ref, repo, provider, model, workspace, output):
+    """Review a pull request against its issue and project conventions."""
+    provider = provider.lower()
+    resolved = _resolve_model(provider, model)
+    _check_keys(provider)
+
+    from agent.github_client import fetch_pr
+    from agent.pipeline import review_pr
+
+    click.echo(f"[review] Provider: {provider}  Model: {resolved}")
+    try:
+        pr_obj = fetch_pr(pr_ref, default_repo=repo)
+    except ValueError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
+    click.echo(f"  PR #{pr_obj.number}: {pr_obj.title}  ({len(pr_obj.changed_files)} files)\n")
+    _run(lambda: review_pr(pr_obj, clone_dir=workspace, output_dir=output,
+                           provider=provider, model=resolved))
+
+
+# ---------------------------------------------------------------------------
+# helpers
+# ---------------------------------------------------------------------------
+def _fetch_issue_or_exit(fetch_issue, issue, repo):
     click.echo(f"Fetching issue: {issue}")
     try:
         issue_obj = fetch_issue(issue, default_repo=repo)
     except ValueError as e:
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)
-
     click.echo(f"  #{issue_obj.number}: {issue_obj.title}")
     click.echo(f"  Labels: {', '.join(issue_obj.labels) or '(none)'}\n")
+    return issue_obj
 
+
+def _run(fn):
     try:
-        run_issue(
-            issue_obj,
-            clone_dir=workspace,
-            output_dir=output,
-            provider=provider,
-            model=resolved_model,
-            base_commit=base_commit,
-        )
+        fn()
     except KeyboardInterrupt:
         click.echo("\nInterrupted.", err=True)
         sys.exit(1)
@@ -160,4 +189,4 @@ def main(issue: str, repo: str, provider: str, model: str, workspace: str, outpu
 
 
 if __name__ == "__main__":
-    main()
+    cli()

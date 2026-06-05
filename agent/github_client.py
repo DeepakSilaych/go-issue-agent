@@ -20,6 +20,81 @@ class Issue:
     repo: str  # owner/name
 
 
+@dataclass
+class PullRequest:
+    number: int
+    title: str
+    body: str
+    url: str
+    repo: str            # owner/name
+    diff: str            # unified diff
+    changed_files: list[str]
+    base_sha: str        # commit the PR branched from
+    issue_number: Optional[int]  # linked issue, if any (Fixes/Closes #N)
+
+
+def _gh_headers(token: Optional[str], accept: str = "application/vnd.github.v3+json") -> dict:
+    h = {"Accept": accept}
+    if token:
+        h["Authorization"] = f"token {token}"
+    return h
+
+
+def _gh_get(url: str, token: Optional[str], accept: str = "application/vnd.github.v3+json", **kwargs):
+    """GET with token, retrying unauthenticated if the token is rejected (401)."""
+    resp = requests.get(url, headers=_gh_headers(token, accept), **kwargs)
+    if resp.status_code == 401 and token:
+        resp = requests.get(url, headers=_gh_headers(None, accept), **kwargs)
+    return resp
+
+
+def fetch_pr(pr_ref: str, default_repo: str = "spf13/cobra") -> PullRequest:
+    """
+    Fetch a GitHub pull request (metadata + unified diff + linked issue).
+
+    pr_ref can be a full PR URL (.../pull/N) or a bare number (uses default_repo).
+    """
+    repo, number = default_repo, None
+    m = re.match(r"https://github\.com/([^/]+/[^/]+)/pull/(\d+)", pr_ref)
+    if m:
+        repo, number = m.group(1), int(m.group(2))
+    elif pr_ref.isdigit():
+        number = int(pr_ref)
+    else:
+        raise ValueError(f"Cannot parse PR reference: {pr_ref!r}\nExpected a GitHub PR URL or a number.")
+
+    token = os.environ.get("GITHUB_TOKEN")
+    api = f"https://api.github.com/repos/{repo}/pulls/{number}"
+
+    meta_resp = _gh_get(api, token, timeout=30)
+    if meta_resp.status_code == 404:
+        raise ValueError(f"PR #{number} not found in {repo}")
+    meta_resp.raise_for_status()
+    meta = meta_resp.json()
+
+    diff_resp = _gh_get(api, token, "application/vnd.github.v3.diff", timeout=30)
+    diff = diff_resp.text if diff_resp.status_code == 200 else "(could not fetch diff)"
+
+    files_resp = _gh_get(api + "/files", token, params={"per_page": 100}, timeout=30)
+    changed = [f["filename"] for f in files_resp.json()] if files_resp.status_code == 200 else []
+
+    body = meta.get("body") or ""
+    im = re.search(r"(?:closes?|fixes?|resolves?)\s+#(\d+)", body, re.IGNORECASE)
+    issue_number = int(im.group(1)) if im else None
+
+    return PullRequest(
+        number=number,
+        title=meta.get("title", ""),
+        body=body,
+        url=meta.get("html_url", f"https://github.com/{repo}/pull/{number}"),
+        repo=repo,
+        diff=diff,
+        changed_files=changed,
+        base_sha=meta.get("base", {}).get("sha", ""),
+        issue_number=issue_number,
+    )
+
+
 def fetch_issue(issue_ref: str, default_repo: str = "spf13/cobra") -> Issue:
     """
     Fetch a GitHub issue.

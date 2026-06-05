@@ -1,8 +1,12 @@
 # go-issue-agent
 
-An agentic AI system that solves GitHub issues from open-source Go projects and generates production-quality code changes.
+An agentic AI system that assists with GitHub issues from open-source Go projects. It has **three modes**:
 
-Given a GitHub issue URL, the agent clones the repo, retrieves relevant symbols and similar past PRs, localizes the fix down to exact lines, plans a targeted change, generates **multiple patch candidates in parallel** and ranks them by test results, self-heals failing tests, and produces a diff and a pull-request summary.
+- **`explain`** — explain the issue and the proposed solution (analysis, no code changes)
+- **`implement`** — localize, plan, patch, validate, and produce a diff + PR summary
+- **`review`** — review a pull request against its issue and the project's conventions
+
+In `implement` mode the agent clones the repo, retrieves relevant symbols and similar past PRs, localizes the fix down to exact lines, plans a targeted change, generates **multiple patch candidates in parallel** and ranks them by test results, self-heals failing tests, and produces a diff and a pull-request summary.
 
 ---
 
@@ -169,38 +173,51 @@ the PR-style grounding.
 
 ---
 
-## Usage
+## Usage — three modes
+
+The CLI has three subcommands. They share the LangGraph nodes; each mode wires a different
+sub-path of the graph.
 
 ```bash
-# Anthropic (default) — cobra ships with a pre-built index
-python solve.py --issue https://github.com/spf13/cobra/issues/2396
+# 1) EXPLAIN — explain the issue and the proposed solution (no code changes)
+#    graph: setup → retrieve → localize → plan → explain
+python solve.py explain --issue https://github.com/spf13/cobra/issues/2396
+#    → output/issue-2396/explanation.md
 
-# Bare issue number + --repo
-python solve.py --issue 2396 --repo spf13/cobra
+# 2) IMPLEMENT — localize, plan, patch (×3 candidates), validate, write a PR summary
+#    graph: setup → retrieve → localize → plan → patch ×N → select → validate ⇄ heal → summary
+python solve.py implement --issue https://github.com/spf13/cobra/issues/2396
+#    steer toward a preferred/modified solution:
+python solve.py implement --issue 2396 --guidance "use a three-index slice, not a copy"
+#    solve at the pre-fix commit (fair, SWE-bench-style evaluation):
+python solve.py implement --issue 2396 --base-commit <sha>
+#    → output/issue-2396/{pr_summary.md, changes.patch, result.json}
 
-# Groq free tier
-python solve.py --issue 2396 --provider groq
-python solve.py --issue 2396 --provider groq --model llama-3.3-70b-versatile
-
-# Azure OpenAI
-python solve.py --issue 2396 --provider azure
-
-# Different repo
-python solve.py --issue https://github.com/gin-gonic/gin/issues/3988
-
-# Custom workspace and output directories
-python solve.py --issue 2396 --workspace ./repos --output ./results
+# 3) REVIEW — review a pull request against its issue + project conventions
+#    graph: setup_review → review
+python solve.py review --pr https://github.com/spf13/cobra/pull/2356
+#    → output/pr-2356/review.md
 ```
 
-### Options
+Provider/output flags work on every subcommand:
+
+```bash
+python solve.py implement --issue 2396 --provider groq
+python solve.py explain   --issue 2396 --provider azure
+python solve.py review    --pr 2356   --workspace ./repos --output ./results
+```
+
+### Options (shared)
 
 ```
---issue      GitHub issue URL or number (required)
---repo       GitHub repo owner/name, e.g. spf13/cobra (default: spf13/cobra)
 --provider   LLM provider: anthropic | groq | azure (default: anthropic)
---model      Model name (default: claude-sonnet-4-6 / llama-3.3-70b-versatile / gpt-4o)
+--model      Model name / Azure deployment (provider-specific default)
 --workspace  Directory to clone repos into (default: ./workspace)
 --output     Directory for output artifacts (default: ./output)
+
+explain / implement:  --issue <url|number>  [--repo owner/name]  [--base-commit <sha>]
+implement only:       --guidance "<preferred or modified solution>"
+review:               --pr <url|number>     [--repo owner/name]
 ```
 
 ### Provider notes
@@ -215,15 +232,15 @@ python solve.py --issue 2396 --workspace ./repos --output ./results
 
 ## Output
 
-For each run, the agent writes to `output/issue-{N}/`:
+Each mode writes to `output/`:
 
-| File | Contents |
-|------|----------|
-| `pr_summary.md` | PR title and body, ready to paste into GitHub |
-| `changes.patch` | `git diff` of the changes made |
-| `result.json` | Full structured result: diff, `tests_pass`, `build_ok`, `vet_ok`, `diff_applied`, test output, winning candidate id |
+| Mode | Path | Files |
+|------|------|-------|
+| `explain` | `output/issue-{N}/` | `explanation.md` — issue + root cause + proposed solution + validation plan |
+| `implement` | `output/issue-{N}/` | `pr_summary.md` (PR title/body), `changes.patch` (`git diff`), `result.json` (diff, `tests_pass`, `build_ok`, `vet_ok`, `diff_applied`, test output, winning candidate id) |
+| `review` | `output/pr-{N}/` | `review.md` — summary, addresses-issue, correctness, conventions, tests, suggestions, verdict |
 
-The modified repo is left on a branch named `fix/issue-{N}` in `workspace/{repo-name}/`.
+In `implement` mode the modified repo is left on a branch named `fix/issue-{N}` in `workspace/{repo-name}/`.
 Re-running on the same issue resets that branch to the upstream default branch first, so
 diffs are reproducible rather than cumulative.
 

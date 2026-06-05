@@ -47,7 +47,13 @@ except ImportError:  # pragma: no cover
     from langgraph.prebuilt import create_react_agent
 from pydantic import BaseModel, Field
 
-from .github_client import Issue, clone_or_update_repo, create_fix_branch
+from .github_client import (
+    Issue,
+    PullRequest,
+    clone_or_update_repo,
+    create_fix_branch,
+    fetch_issue,
+)
 from .go_utils import Worktree, find_docker, find_go, get_diff, go_available, go_build, go_test, go_vet
 from .indexer import build_symbol_index, build_test_helpers, index_exists, load_index
 from .llm_client import make_chat_model
@@ -118,6 +124,15 @@ class PipelineState(TypedDict, total=False):
     output_dir: str
     project_rules: str
     base_commit: Optional[str]
+    guidance: Optional[str]   # implement mode: steer toward a modified solution
+    # review mode
+    pr: PullRequest
+    pr_diff: str
+    changed_file_contents: str
+    linked_issue_text: str
+    # explain / review outputs
+    explanation: str
+    review: str
     # setup outputs
     repo_path: str
     index: dict
@@ -294,8 +309,15 @@ def _write_output(result: dict, issue_number: int, output_dir: str):
 # Graph construction — nodes capture the LLM via closure
 # ---------------------------------------------------------------------------
 
-def build_graph(provider: str, model: str):
-    """Construct and compile the LangGraph pipeline for a given provider/model."""
+def build_graph(provider: str, model: str, mode: str = "implement"):
+    """
+    Construct and compile the LangGraph pipeline for a given provider/model and mode.
+
+    Modes (all share the same nodes):
+      - "implement": setup → retrieve → localize → plan → patch ×N → validate ⇄ heal → summary
+      - "explain":   setup → retrieve → localize → plan → explain
+      - "review":    setup_review → review   (input is a PullRequest, not an Issue)
+    """
     llm = make_chat_model(provider, model)
     system_prompt = _load_prompt("system")
 
@@ -396,16 +418,99 @@ def build_graph(provider: str, model: str):
     def plan(state: PipelineState) -> dict:
         issue = state["issue"]
         print("\n[phase 3/5] Planning fix with PR context...")
+        file_ctx = state["file_contents"] + f"\n\n## Similar Past PRs\n{state['prs_text']}"
+        guidance = state.get("guidance")
+        if guidance:
+            file_ctx += (
+                "\n\n## User Guidance (a preferred / modified solution — follow this)\n"
+                f"{guidance}"
+            )
+            print(f"  Incorporating user guidance: {guidance[:80]}")
         prompt = _load_prompt("plan").format(
             issue_title=issue.title,
             issue_url=issue.url,
             issue_body=issue.body or "(no body)",
             project_rules=state["project_rules"],
-            file_contents=state["file_contents"] + f"\n\n## Similar Past PRs\n{state['prs_text']}",
+            file_contents=file_ctx,
         )
         text = _text(llm.invoke([HumanMessage(content=prompt)]))
         print(f"\n{text[:800]}...\n" if len(text) > 800 else f"\n{text}\n")
         return {"fix_plan": text}
+
+    # ---- Explain mode: synthesize a reviewer-facing explanation --------
+    def explain(state: PipelineState) -> dict:
+        issue = state["issue"]
+        print("\n[explain] Writing issue + solution explanation...")
+        prompt = _load_prompt("explain").format(
+            issue_title=issue.title,
+            issue_url=issue.url,
+            issue_body=issue.body or "(no body)",
+            project_rules=state["project_rules"],
+            file_contents=state["file_contents"],
+            fix_plan=state["fix_plan"],
+            edit_locations=state["edit_locations_text"],
+        )
+        text = _text(llm.invoke([HumanMessage(content=prompt)]))
+        out_dir = Path(state["output_dir"]) / f"issue-{issue.number}"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "explanation.md").write_text(text)
+        print(f"\n[output] Written to {out_dir}/explanation.md")
+        print(f"\n{'='*60}\nEXPLANATION\n{'='*60}\n{text}\n{'='*60}")
+        return {"explanation": text, "result": {"mode": "explain", "issue": {
+            "number": issue.number, "title": issue.title, "url": issue.url}, "explanation": text}}
+
+    # ---- Review mode: clone at base, load context, review the diff -----
+    def setup_review(state: PipelineState) -> dict:
+        pr = state["pr"]
+        print(f"\n{'='*60}\nReviewing PR #{pr.number}: {pr.title}\nRepo: {pr.repo}\n{'='*60}\n")
+        print("[setup] Cloning/updating repository...")
+        repo_path = clone_or_update_repo(pr.repo, state["clone_dir"])
+        if pr.base_sha:
+            subprocess.run(["git", "checkout", "--force", pr.base_sha], cwd=repo_path, capture_output=True)
+            print(f"[setup] Checked out PR base {pr.base_sha[:12]}")
+
+        # Load full pre-change content of the changed Go files for context.
+        parts = []
+        for path in [f for f in pr.changed_files if f.endswith(".go")][:8]:
+            full = Path(repo_path) / path
+            if full.exists():
+                try:
+                    parts.append(f"### {path}\n```go\n{full.read_text(encoding='utf-8')}\n```")
+                except Exception:
+                    pass
+        changed_contents = "\n\n".join(parts) if parts else "(changed files not available at base)"
+
+        # Linked issue text, if any.
+        linked = "(no linked issue found in the PR description)"
+        if pr.issue_number:
+            try:
+                iss = fetch_issue(str(pr.issue_number), default_repo=pr.repo)
+                linked = f"**#{iss.number}: {iss.title}**\n\n{iss.body or '(no body)'}"
+            except Exception:
+                pass
+        return {"repo_path": repo_path, "changed_file_contents": changed_contents,
+                "pr_diff": pr.diff, "linked_issue_text": linked}
+
+    def review(state: PipelineState) -> dict:
+        pr = state["pr"]
+        print("\n[review] Reviewing the diff...")
+        prompt = _load_prompt("review").format(
+            pr_title=pr.title,
+            pr_url=pr.url,
+            pr_body=pr.body or "(no description)",
+            linked_issue=state["linked_issue_text"],
+            project_rules=state["project_rules"],
+            diff=state["pr_diff"][:12000],
+            changed_file_contents=state["changed_file_contents"][:12000],
+        )
+        text = _text(llm.invoke([HumanMessage(content=prompt)]))
+        out_dir = Path(state["output_dir"]) / f"pr-{pr.number}"
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "review.md").write_text(text)
+        print(f"\n[output] Written to {out_dir}/review.md")
+        print(f"\n{'='*60}\nPR REVIEW\n{'='*60}\n{text}\n{'='*60}")
+        return {"review": text, "result": {"mode": "review", "pr": {
+            "number": pr.number, "title": pr.title, "url": pr.url}, "review": text}}
 
     # ---- Phase 4: fan-out to candidates --------------------------------
     def route_to_candidates(state: PipelineState):
@@ -586,22 +691,39 @@ def build_graph(provider: str, model: str):
         _write_output(result, issue.number, state["output_dir"])
         return {"pr_summary": pr_summary, "result": result}
 
-    # ---- wire the graph -------------------------------------------------
+    # ---- wire the graph (per mode) --------------------------------------
     g = StateGraph(PipelineState)
+
+    if mode == "review":
+        g.add_node("setup_review", setup_review)
+        g.add_node("review", review)
+        g.add_edge(START, "setup_review")
+        g.add_edge("setup_review", "review")
+        g.add_edge("review", END)
+        return g.compile()
+
+    # explain and implement share setup → retrieve → localize → plan
     g.add_node("setup", setup)
     g.add_node("retrieve", retrieve)
     g.add_node("localize", localize)
     g.add_node("plan", plan)
+    g.add_edge(START, "setup")
+    g.add_edge("setup", "retrieve")
+    g.add_edge("retrieve", "localize")
+    g.add_edge("localize", "plan")
+
+    if mode == "explain":
+        g.add_node("explain", explain)
+        g.add_edge("plan", "explain")
+        g.add_edge("explain", END)
+        return g.compile()
+
+    # mode == "implement"
     g.add_node("patch_candidate", patch_candidate)
     g.add_node("select_patch", select_patch)
     g.add_node("validate", validate)
     g.add_node("self_heal", self_heal)
     g.add_node("summary", summary)
-
-    g.add_edge(START, "setup")
-    g.add_edge("setup", "retrieve")
-    g.add_edge("retrieve", "localize")
-    g.add_edge("localize", "plan")
     g.add_conditional_edges("plan", route_to_candidates, ["patch_candidate"])
     g.add_edge("patch_candidate", "select_patch")
     g.add_edge("select_patch", "validate")
@@ -616,10 +738,31 @@ def build_graph(provider: str, model: str):
 # ---------------------------------------------------------------------------
 
 def run_issue(issue: Issue, clone_dir: str, output_dir: str, provider: str, model: str,
-              base_commit: Optional[str] = None) -> dict:
-    """Run the full pipeline for one issue and return the result dict."""
+              base_commit: Optional[str] = None, guidance: Optional[str] = None) -> dict:
+    """IMPLEMENT mode: localize, plan, patch, validate, and write a PR summary."""
     Path(output_dir).mkdir(parents=True, exist_ok=True)
-    graph = build_graph(provider, model)
+    graph = build_graph(provider, model, mode="implement")
+    final_state = graph.invoke(
+        {
+            "issue": issue,
+            "clone_dir": clone_dir,
+            "output_dir": output_dir,
+            "project_rules": load_rules(issue.repo),
+            "base_commit": base_commit,
+            "guidance": guidance,
+            "candidates": [],
+            "heal_rounds": 0,
+        },
+        config={"recursion_limit": 100},
+    )
+    return final_state["result"]
+
+
+def explain_issue(issue: Issue, clone_dir: str, output_dir: str, provider: str, model: str,
+                  base_commit: Optional[str] = None) -> dict:
+    """EXPLAIN mode: explain the issue and the proposed solution (no code changes)."""
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    graph = build_graph(provider, model, mode="explain")
     final_state = graph.invoke(
         {
             "issue": issue,
@@ -630,7 +773,25 @@ def run_issue(issue: Issue, clone_dir: str, output_dir: str, provider: str, mode
             "candidates": [],
             "heal_rounds": 0,
         },
-        config={"recursion_limit": 100},
+        config={"recursion_limit": 50},
+    )
+    return final_state["result"]
+
+
+def review_pr(pr: PullRequest, clone_dir: str, output_dir: str, provider: str, model: str) -> dict:
+    """REVIEW mode: review a pull request against its issue and project conventions."""
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    graph = build_graph(provider, model, mode="review")
+    final_state = graph.invoke(
+        {
+            "pr": pr,
+            "clone_dir": clone_dir,
+            "output_dir": output_dir,
+            "project_rules": load_rules(pr.repo),
+            "candidates": [],
+            "heal_rounds": 0,
+        },
+        config={"recursion_limit": 50},
     )
     return final_state["result"]
 
