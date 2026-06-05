@@ -22,12 +22,12 @@ Based on the issue description and the repository map above, identify:
 
 Return your answer as a JSON object with this exact structure:
 ```json
-{
+{{
   "primary_files": ["path/to/file.go"],
   "secondary_files": ["path/to/other.go"],
   "test_files": ["path/to/file_test.go"],
   "reasoning": "Brief explanation of why these files are relevant"
-}
+}}
 ```
 
 Focus on accuracy over completeness. It's better to list 2-3 highly relevant files than 10 loosely relevant ones.

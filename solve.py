@@ -24,12 +24,13 @@ if env_file.exists():
         line = line.strip()
         if line and not line.startswith("#") and "=" in line:
             k, v = line.split("=", 1)
-            os.environ.setdefault(k.strip(), v.strip())
+            v = v.split("#")[0].strip()  # strip inline comments
+            os.environ.setdefault(k.strip(), v)
 
 PROVIDER_DEFAULTS = {
     "anthropic": "claude-sonnet-4-6",
     "groq":      "llama-3.3-70b-versatile",
-    "azure":     "gpt-4o",          # overridden by AZURE_OPENAI_DEPLOYMENT if set
+    "azure":     "gpt-5.4-mini",    # overridden by AZURE_OPENAI_DEPLOYMENT if set
 }
 
 

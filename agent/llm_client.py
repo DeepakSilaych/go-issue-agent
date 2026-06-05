@@ -8,6 +8,7 @@ Both providers are wrapped to a common interface:
 
 import json
 import os
+import time
 from dataclasses import dataclass
 from typing import Any, Optional
 
@@ -134,7 +135,7 @@ class GroqClient:
             kwargs["tools"] = _anthropic_to_openai_tools(tools)
             kwargs["tool_choice"] = "auto"
 
-        resp = self.client.chat.completions.create(**kwargs)
+        resp = _retry(lambda: self.client.chat.completions.create(**kwargs))
         msg = resp.choices[0].message
         stop = resp.choices[0].finish_reason  # "stop" | "tool_calls"
 
@@ -209,8 +210,8 @@ class AzureClient:
             azure_endpoint=endpoint,
             api_version=version,
         )
-        # model here is the deployment name; env var overrides --model
-        self.model = os.environ.get("AZURE_OPENAI_DEPLOYMENT") or model or "gpt-4o"
+        # --model flag wins; fall back to AZURE_OPENAI_DEPLOYMENT env var, then "gpt-4o"
+        self.model = model or os.environ.get("AZURE_OPENAI_DEPLOYMENT") or "gpt-4o"
 
     def chat(
         self,
@@ -224,12 +225,12 @@ class AzureClient:
             history.append({"role": "system", "content": system})
         history.extend(messages)
 
-        kwargs = dict(model=self.model, messages=history, max_tokens=max_tokens)
+        kwargs = dict(model=self.model, messages=history, max_completion_tokens=max_tokens)
         if tools:
             kwargs["tools"] = _anthropic_to_openai_tools(tools)
             kwargs["tool_choice"] = "auto"
 
-        resp = self.client.chat.completions.create(**kwargs)
+        resp = _retry(lambda: self.client.chat.completions.create(**kwargs))
         msg = resp.choices[0].message
 
         text = msg.content or ""
@@ -264,6 +265,30 @@ class AzureClient:
             {"role": "tool", "tool_call_id": tc.id, "content": res}
             for tc, res in zip(tool_calls, results)
         ]
+
+
+# ---------------------------------------------------------------------------
+# Retry helper
+# ---------------------------------------------------------------------------
+
+def _retry(fn, max_attempts: int = 7, base_delay: float = 15.0):
+    """Retry fn on 429/503 rate-limit errors with exponential backoff."""
+    for attempt in range(max_attempts):
+        try:
+            return fn()
+        except Exception as e:
+            status = getattr(e, "status_code", None) or getattr(e, "code", None)
+            is_rate_limit = (
+                status in (429, 503)
+                or "rate" in str(e).lower()
+                or "too many" in str(e).lower()
+            )
+            if is_rate_limit and attempt < max_attempts - 1:
+                delay = min(base_delay * (2 ** attempt), 300)  # cap at 5 min
+                print(f"  [rate limit] waiting {delay:.0f}s before retry {attempt+1}/{max_attempts-1}...")
+                time.sleep(delay)
+            else:
+                raise
 
 
 # ---------------------------------------------------------------------------

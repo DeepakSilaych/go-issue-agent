@@ -1,6 +1,8 @@
 .env
 workspace/
 output/
+indexes/
 __pycache__/
 *.pyc
+*.patch
 .DS_Store

@@ -1,8 +1,11 @@
 """Tool implementations and Claude tool definitions for the agentic loop."""
 
+import shlex
 import subprocess
 from pathlib import Path
 from typing import Optional
+
+from .go_utils import find_docker, find_go, _go_docker_image
 
 # Claude tool schema definitions
 TOOL_DEFINITIONS = [
@@ -272,21 +275,57 @@ class ToolExecutor:
         return f"Created '{path}' successfully."
 
     def _tool_run_command(self, command: str, timeout: int = 120) -> str:
-        stripped = command.strip()
-        if not any(stripped.startswith(p) for p in self.ALLOWED_COMMAND_PREFIXES):
+        try:
+            tokens = shlex.split(command.strip())
+        except ValueError as e:
+            return f"Error: could not parse command: {e}"
+
+        if not tokens:
+            return "Error: empty command"
+
+        # Security: validate first token against whitelist (no shell=True)
+        allowed_bins = {"go", "git", "gofmt", "golangci-lint"}
+        if tokens[0] not in allowed_bins:
             return (
-                f"Error: Command not allowed: {command!r}. "
-                f"Only these prefixes are permitted: {self.ALLOWED_COMMAND_PREFIXES}"
+                f"Error: Command not allowed: {tokens[0]!r}. "
+                f"Only these commands are permitted: {sorted(allowed_bins)}"
             )
 
-        result = subprocess.run(
-            stripped,
-            shell=True,
-            capture_output=True,
-            text=True,
-            timeout=timeout,
-            cwd=str(self.repo_path),
-        )
+        # Resolve `go` to local binary or Docker
+        if tokens[0] == "go":
+            go_bin = find_go()
+            if go_bin:
+                tokens[0] = go_bin
+                result = subprocess.run(
+                    tokens,
+                    capture_output=True,
+                    text=True,
+                    timeout=timeout,
+                    cwd=str(self.repo_path),
+                )
+            else:
+                docker = find_docker()
+                if not docker:
+                    return "stderr:\ngo binary not found and Docker is unavailable\n\nexit_code: 1"
+                abs_path = str(self.repo_path.resolve())
+                image = _go_docker_image(abs_path)
+                result = subprocess.run(
+                    [docker, "run", "--rm",
+                     "-v", f"{abs_path}:/app",
+                     "-w", "/app",
+                     image] + tokens,
+                    capture_output=True,
+                    text=True,
+                    timeout=max(timeout, 300),
+                )
+        else:
+            result = subprocess.run(
+                tokens,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+                cwd=str(self.repo_path),
+            )
 
         parts = []
         if result.stdout:
