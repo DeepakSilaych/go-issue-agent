@@ -32,6 +32,7 @@ toolchain, worktrees) is the project's own code, reused unchanged.
 
 import json
 import operator
+import os
 import subprocess
 from pathlib import Path
 from typing import Annotated, Optional, TypedDict
@@ -69,7 +70,17 @@ from .tools import make_tools
 MAX_PATCH_RECURSION = 60   # create_react_agent step budget per candidate
 MAX_HEAL_RECURSION = 80    # heal agent re-runs (slow) tests, so it needs more headroom
 MAX_HEAL_ROUNDS = 3
-NUM_CANDIDATES = 3
+
+# Knobs (overridable via env for batch evaluation / cost control):
+#   GIA_NUM_CANDIDATES — patch candidates to sample (default 3)
+#   GIA_SKIP_TESTS     — set truthy to skip go build/test/vet + self-heal (faster batch eval)
+NUM_CANDIDATES = int(os.environ.get("GIA_NUM_CANDIDATES", "3"))
+SKIP_TESTS = os.environ.get("GIA_SKIP_TESTS", "") not in ("", "0", "false", "False")
+
+
+def _tests_enabled() -> bool:
+    """Whether to actually run the Go toolchain (off in skip-tests batch mode)."""
+    return go_available() and not SKIP_TESTS
 
 # Per-candidate strategy nudges — each tries a slightly different approach.
 CANDIDATE_STRATEGIES = [
@@ -518,7 +529,7 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
         return [
             Send("patch_candidate", {
                 "candidate_id": i + 1,
-                "strategy": CANDIDATE_STRATEGIES[i],
+                "strategy": CANDIDATE_STRATEGIES[i % len(CANDIDATE_STRATEGIES)],
                 "issue": state["issue"],
                 "fix_plan": state["fix_plan"],
                 "edit_locations_text": state["edit_locations_text"],
@@ -562,7 +573,7 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
             print(f"    [C{cid}] Finished — diff {len(diff)} bytes — {status}")
 
             tests_pass, test_output = False, ""
-            if go_available() and diff != "(no changes)":
+            if _tests_enabled() and diff != "(no changes)":
                 tests_pass, test_output = go_test(wt)
 
         return {"candidates": [{
@@ -606,7 +617,7 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
         final_diff = get_diff(repo_path)
         updates = {"final_diff": final_diff}
 
-        if go_available() and final_diff != "(no changes)":
+        if _tests_enabled() and final_diff != "(no changes)":
             build_ok, _ = go_build(repo_path)
             tests_pass, test_output = go_test(repo_path)
             vet_ok, vet_out = go_vet(repo_path)
@@ -621,7 +632,7 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
         return updates
 
     def should_heal(state: PipelineState) -> str:
-        if not go_available():
+        if not _tests_enabled():
             return "summary"
         if state.get("final_diff", "(no changes)") == "(no changes)":
             return "summary"

@@ -13,3 +13,4 @@ __pycache__/
 indexes/*
 !indexes/spf13_cobra
 !indexes/spf13_cobra/**
+eval/runs/
