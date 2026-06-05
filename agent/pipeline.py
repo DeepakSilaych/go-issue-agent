@@ -61,6 +61,7 @@ from .retrieval import (
 from .tools import make_tools
 
 MAX_PATCH_RECURSION = 60   # create_react_agent step budget per candidate
+MAX_HEAL_RECURSION = 80    # heal agent re-runs (slow) tests, so it needs more headroom
 MAX_HEAL_ROUNDS = 3
 NUM_CANDIDATES = 3
 
@@ -263,6 +264,16 @@ def _apply_candidate_diff(repo_path: str, diff: str) -> bool:
         return True
     print(f"  Warning: could not apply diff: {proc.stderr[:200]}")
     return False
+
+
+def _restore_worktree(repo_path: str, diff: str):
+    """Reset the working tree to exactly the given diff (relative to HEAD)."""
+    subprocess.run(["git", "checkout", "--", "."], cwd=repo_path, capture_output=True)
+    if diff and diff != "(no changes)":
+        subprocess.run(
+            ["git", "apply", "--whitespace=nowarn"],
+            input=diff, text=True, cwd=repo_path, capture_output=True,
+        )
 
 
 def _write_output(result: dict, issue_number: int, output_dir: str):
@@ -519,22 +530,28 @@ def build_graph(provider: str, model: str):
         rnd = state.get("heal_rounds", 0) + 1
         print(f"  Self-heal round {rnd}/{MAX_HEAL_ROUNDS}...")
         issue = state["issue"]
-        agent = create_react_agent(llm, make_tools(state["repo_path"]))
+        repo_path = state["repo_path"]
+        # Snapshot the current (best-so-far) diff so a crashed round can be rolled back
+        # instead of leaving partial, possibly-unrelated edits in the tree.
+        snapshot = get_diff(repo_path)
+        agent = create_react_agent(llm, make_tools(repo_path))
         heal_prompt = (
             "The following tests are failing after your fix. Fix the failures using the tools.\n\n"
             f"Issue: {issue.title}\n\n"
             f"Test output:\n```\n{state.get('test_output', '')[:3000]}\n```\n\n"
-            "Use read_file, edit_file, and run_command to fix all failures. "
-            "When all tests pass, respond: DONE: <summary>"
+            "Make the SMALLEST change that fixes the failures. Do not edit unrelated files. "
+            "Use read_file, edit_file, and run_command. When all tests pass, respond: DONE: <summary>"
         )
         try:
             agent.invoke(
                 {"messages": [SystemMessage(content=system_prompt),
                               HumanMessage(content=heal_prompt)]},
-                config={"recursion_limit": 40},
+                config={"recursion_limit": MAX_HEAL_RECURSION},
             )
         except Exception as e:
             print(f"  Self-heal round errored: {type(e).__name__}: {e}")
+            print("  Rolling back this round's partial edits to the pre-heal state.")
+            _restore_worktree(repo_path, snapshot)
         return {"heal_rounds": rnd}
 
     def summary(state: PipelineState) -> dict:
