@@ -14,3 +14,5 @@ indexes/*
 !indexes/spf13_cobra
 !indexes/spf13_cobra/**
 eval/runs/
+workspace_t/
+output_t/
