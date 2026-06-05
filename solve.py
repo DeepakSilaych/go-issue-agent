@@ -3,8 +3,12 @@
 go-issue-agent: Agentic AI contributor for open-source Go projects.
 
 Usage:
-    python solve.py --issue https://github.com/spf13/cobra/issues/2123
-    python solve.py --issue 2123 --repo spf13/cobra
+    # Anthropic (default)
+    python solve.py --issue https://github.com/spf13/cobra/issues/2396
+
+    # Groq (free tier)
+    python solve.py --issue 2396 --provider groq
+    python solve.py --issue 2396 --provider groq --model llama-3.3-70b-versatile
 """
 
 import os
@@ -22,18 +26,38 @@ if env_file.exists():
             k, v = line.split("=", 1)
             os.environ.setdefault(k.strip(), v.strip())
 
+PROVIDER_DEFAULTS = {
+    "anthropic": "claude-sonnet-4-6",
+    "groq":      "llama-3.3-70b-versatile",
+}
+
 
 @click.command()
 @click.option(
     "--issue",
     required=True,
-    help="GitHub issue URL (https://github.com/owner/repo/issues/N) or issue number.",
+    help="GitHub issue URL (https://github.com/owner/repo/issues/N) or bare number.",
 )
 @click.option(
     "--repo",
     default="spf13/cobra",
     show_default=True,
     help="GitHub repo (owner/name). Used when --issue is a bare number.",
+)
+@click.option(
+    "--provider",
+    default="anthropic",
+    show_default=True,
+    type=click.Choice(["anthropic", "groq"], case_sensitive=False),
+    help="LLM provider.",
+)
+@click.option(
+    "--model",
+    default=None,
+    help=(
+        "Model name. Defaults: anthropic=claude-sonnet-4-6, "
+        "groq=llama-3.3-70b-versatile."
+    ),
 )
 @click.option(
     "--workspace",
@@ -47,37 +71,33 @@ if env_file.exists():
     show_default=True,
     help="Directory for output artifacts (diff, PR summary, JSON).",
 )
-@click.option(
-    "--model",
-    default="claude-sonnet-4-6",
-    show_default=True,
-    help="Claude model to use.",
-)
-def main(issue: str, repo: str, workspace: str, output: str, model: str):
+def main(issue: str, repo: str, provider: str, model: str, workspace: str, output: str):
     """
     Solve a GitHub issue from an open-source Go project.
 
-    The agent will:
     \b
-    1. Clone the repository (or use an existing clone)
-    2. Fetch the issue from GitHub
-    3. Build a repository map
-    4. Identify relevant files (localize)
-    5. Plan a targeted fix
-    6. Implement the fix via a tool-use loop
-    7. Run go build and go test to validate
-    8. Generate a PR title and body
+    Phases:
+      1. Localize  — identify relevant files from repo map + issue
+      2. Plan      — generate a targeted fix strategy
+      3. Patch     — implement the fix (tool-use loop: read, edit, test)
+      4. Validate  — run go test, generate PR title + body
 
-    Output is written to --output/issue-{N}/:
-      - pr_summary.md  (PR title + body)
-      - changes.patch  (git diff)
-      - result.json    (full structured result)
+    \b
+    Output (output/issue-{N}/):
+      pr_summary.md   PR title and body
+      changes.patch   git diff of the changes
+      result.json     full structured result
     """
-    # Validate API key
-    if not os.environ.get("ANTHROPIC_API_KEY"):
+    provider = provider.lower()
+    resolved_model = model or PROVIDER_DEFAULTS[provider]
+
+    # Validate required API keys
+    key_map = {"anthropic": "ANTHROPIC_API_KEY", "groq": "GROQ_API_KEY"}
+    required_key = key_map[provider]
+    if not os.environ.get(required_key):
         click.echo(
-            "Error: ANTHROPIC_API_KEY is not set.\n"
-            "Set it in your environment or create a .env file.",
+            f"Error: {required_key} is not set.\n"
+            f"Add it to your .env file or export it in your shell.",
             err=True,
         )
         sys.exit(1)
@@ -85,11 +105,7 @@ def main(issue: str, repo: str, workspace: str, output: str, model: str):
     from agent.github_client import fetch_issue
     from agent.pipeline import Pipeline
 
-    # Override model if specified
-    if model != "claude-sonnet-4-6":
-        import agent.pipeline as pipeline_module
-        pipeline_module.MODEL = model
-
+    click.echo(f"Provider: {provider}  Model: {resolved_model}")
     click.echo(f"Fetching issue: {issue}")
     try:
         issue_obj = fetch_issue(issue, default_repo=repo)
@@ -100,7 +116,13 @@ def main(issue: str, repo: str, workspace: str, output: str, model: str):
     click.echo(f"  #{issue_obj.number}: {issue_obj.title}")
     click.echo(f"  Labels: {', '.join(issue_obj.labels) or '(none)'}\n")
 
-    pipeline = Pipeline(repo=issue_obj.repo, clone_dir=workspace, output_dir=output)
+    pipeline = Pipeline(
+        repo=issue_obj.repo,
+        clone_dir=workspace,
+        output_dir=output,
+        provider=provider,
+        model=resolved_model,
+    )
 
     try:
         pipeline.run(issue_obj)

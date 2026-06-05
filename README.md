@@ -85,7 +85,7 @@ Works on any Go repository; rules files improve output quality for the above.
 - Python 3.9+
 - Git
 - Go 1.21+ (for running tests in the target repo)
-- An Anthropic API key
+- An LLM API key (Anthropic **or** Groq free tier)
 
 ### Install
 
@@ -99,13 +99,19 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY
+# Edit .env — add at least one of ANTHROPIC_API_KEY or GROQ_API_KEY
 ```
 
 `.env`:
 ```
+# Option A: Anthropic
 ANTHROPIC_API_KEY=sk-ant-...
-GITHUB_TOKEN=ghp_...   # Optional: increases GitHub API rate limit
+
+# Option B: Groq (free tier) — https://console.groq.com
+GROQ_API_KEY=gsk_...
+
+# Optional: higher GitHub API rate limit
+GITHUB_TOKEN=ghp_...
 ```
 
 ---
@@ -113,31 +119,40 @@ GITHUB_TOKEN=ghp_...   # Optional: increases GitHub API rate limit
 ## Usage
 
 ```bash
-# Using a full issue URL
+# Anthropic (default)
 python solve.py --issue https://github.com/spf13/cobra/issues/2396
 
-# Using just an issue number (defaults to spf13/cobra)
-python solve.py --issue 2396
+# Groq free tier
+python solve.py --issue 2396 --provider groq
+
+# Groq with a specific model
+python solve.py --issue 2396 --provider groq --model llama-3.3-70b-versatile
 
 # Different repo
 python solve.py --issue https://github.com/gin-gonic/gin/issues/3988
 
 # Custom workspace and output directories
 python solve.py --issue 2396 --workspace ./repos --output ./results
-
-# Use a different model (default: claude-sonnet-4-6)
-python solve.py --issue 2396 --model claude-opus-4-8
 ```
 
 ### Options
 
 ```
---issue     GitHub issue URL or number (required)
---repo      GitHub repo owner/name, e.g. spf13/cobra (default: spf13/cobra)
---workspace Directory to clone repos into (default: ./workspace)
---output    Directory for output artifacts (default: ./output)
---model     Claude model to use (default: claude-sonnet-4-6)
+--issue      GitHub issue URL or number (required)
+--repo       GitHub repo owner/name, e.g. spf13/cobra (default: spf13/cobra)
+--provider   LLM provider: anthropic or groq (default: anthropic)
+--model      Model name (default: claude-sonnet-4-6 / llama-3.3-70b-versatile)
+--workspace  Directory to clone repos into (default: ./workspace)
+--output     Directory for output artifacts (default: ./output)
 ```
+
+### Groq free tier notes
+
+Groq's free tier supports tool/function calling on `llama-3.3-70b-versatile` (128k context).
+Rate limits apply (~30 req/min on free tier), so complex issues may slow down during the
+patch loop. The default model is a good balance of quality and speed.
+
+Available Groq models for this tool: `llama-3.3-70b-versatile` (recommended), `llama3-70b-8192`.
 
 ---
 
