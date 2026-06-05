@@ -38,10 +38,18 @@ Implement the fix using tools. Candidate {candidate_id} should follow the strate
 
 **Workflow:**
 1. Read every file you will modify first
-2. Implement ALL changes from the fix plan using edit_file / create_file
+2. Implement the fix by **changing source code** (a `.go` file that is NOT a `_test.go` file).
+   Then, if appropriate, add or update tests.
 3. Try `go build ./...` — if Go is available, fix any errors
 4. Try `go vet ./...` and `go test ./...` — if Go is available, fix failures
 5. If Go is NOT available, skip steps 3-4 and still respond DONE
+
+**CRITICAL — a fix must change SOURCE code, not only tests.**
+The issue describes broken *behaviour*; behaviour lives in the non-test `.go` files
+(e.g. `command.go`, `completions.go`, `powershell_completions.go`). Editing or adding only a
+`_test.go` file does NOT fix the issue — a test that asserts the current (buggy) behaviour, or a
+new test with no corresponding source change, is wrong. Always make the source change first; add a
+test only to *cover* that source change.
 
 **IMPORTANT: Always implement the code changes, even if you cannot run Go.
 Never respond BLOCKED just because `go` or `gofmt` is not installed.

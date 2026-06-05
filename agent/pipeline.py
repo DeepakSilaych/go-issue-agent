@@ -33,6 +33,7 @@ toolchain, worktrees) is the project's own code, reused unchanged.
 import json
 import operator
 import os
+import re
 import subprocess
 from pathlib import Path
 from typing import Annotated, Optional, TypedDict
@@ -290,6 +291,12 @@ def _apply_candidate_diff(repo_path: str, diff: str) -> bool:
         return True
     print(f"  Warning: could not apply diff: {proc.stderr[:200]}")
     return False
+
+
+def _has_source_edit(diff: str) -> bool:
+    """True if the diff changes at least one Go SOURCE file (not just _test.go)."""
+    files = re.findall(r"^diff --git a/(.+?) b/", diff or "", re.MULTILINE)
+    return any(f.endswith(".go") and not f.endswith("_test.go") for f in files)
 
 
 def _restore_worktree(repo_path: str, diff: str):
@@ -587,17 +594,29 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
     def select_patch(state: PipelineState) -> dict:
         results = state.get("candidates", [])
         for r in results:
-            print(f"  Candidate {r['candidate_id']}: {r['status']}  tests={'PASS' if r['tests_pass'] else 'FAIL'}")
+            src = "src" if _has_source_edit(r["diff"]) else "test-only"
+            print(f"  Candidate {r['candidate_id']}: {r['status']}  "
+                  f"tests={'PASS' if r['tests_pass'] else 'FAIL'}  edit={src}")
 
-        passing = [r for r in results if r["tests_pass"]]
-        if passing:
-            best = min(passing, key=lambda r: len(r["diff"]))
-            print(f"  Best candidate: #{best['candidate_id']} (tests pass, diff {len(best['diff'])})")
+        with_changes = [r for r in results if r["diff"] != "(no changes)"]
+        if with_changes:
+            # Rank: tests pass first, then a real SOURCE edit (a fix must change source,
+            # not just add a test), then the smallest diff.
+            best = min(with_changes, key=lambda r: (
+                not r["tests_pass"],
+                not _has_source_edit(r["diff"]),
+                len(r["diff"]),
+            ))
+            why = []
+            if best["tests_pass"]:
+                why.append("tests pass")
+            why.append("source edit" if _has_source_edit(best["diff"]) else "TEST-ONLY (no source change!)")
+            print(f"  Best candidate: #{best['candidate_id']} ({', '.join(why)}, diff {len(best['diff'])})")
+            if not _has_source_edit(best["diff"]):
+                print("  WARNING: chosen patch changes no source file — likely does NOT fix the issue.")
         elif results:
-            with_changes = [r for r in results if r["diff"] != "(no changes)"]
-            pool = with_changes if with_changes else results
-            best = min(pool, key=lambda r: len(r["diff"]))
-            print(f"  No passing candidates — using #{best['candidate_id']} (smallest diff, best effort)")
+            best = results[0]
+            print("  No candidate produced changes.")
         else:
             print("  All candidates failed — returning empty")
             best = {"candidate_id": 0, "diff": "(no changes)", "tests_pass": False,
