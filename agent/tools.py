@@ -136,6 +136,20 @@ class ToolExecutor:
         full.write_text(current.replace(old_content, new_content, 1), encoding="utf-8")
         return f"Edited '{path}' successfully."
 
+    def _tool_replace_lines(self, path: str, start_line: int, end_line: int, new_content: str) -> str:
+        full = self.repo_path / path
+        if not full.exists():
+            return f"Error: '{path}' does not exist"
+        lines = full.read_text(encoding="utf-8").splitlines(keepends=True)
+        total = len(lines)
+        if start_line < 1 or end_line > total or start_line > end_line:
+            return (f"Error: invalid range {start_line}-{end_line} for '{path}' ({total} lines). "
+                    "Use read_file to get current line numbers.")
+        replacement = new_content if new_content.endswith("\n") or not new_content else new_content + "\n"
+        new_lines = lines[: start_line - 1] + [replacement] + lines[end_line:]
+        full.write_text("".join(new_lines), encoding="utf-8")
+        return f"Replaced lines {start_line}-{end_line} in '{path}'."
+
     def _tool_create_file(self, path: str, content: str) -> str:
         full = self.repo_path / path
         if full.exists():
@@ -250,6 +264,14 @@ def make_tools(repo_path: str) -> list:
         return _safe(ex._tool_edit_file, "edit_file", path=path, old_content=old_content, new_content=new_content)
 
     @tool
+    def replace_lines(path: str, start_line: int, end_line: int, new_content: str) -> str:
+        """Replace an inclusive 1-indexed line range with new_content. Use this when edit_file's
+        exact match fails — e.g. editing inside a large embedded string literal / template.
+        Read the file first to get current line numbers."""
+        return _safe(ex._tool_replace_lines, "replace_lines",
+                     path=path, start_line=start_line, end_line=end_line, new_content=new_content)
+
+    @tool
     def create_file(path: str, content: str) -> str:
         """Create a new file with the given content. Fails if the file already exists."""
         return _safe(ex._tool_create_file, "create_file", path=path, content=content)
@@ -259,4 +281,5 @@ def make_tools(repo_path: str) -> list:
         """Run a whitelisted command (go build/test/vet, gofmt, git, golangci-lint) in the repo."""
         return _safe(ex._tool_run_command, "run_command", command=command, timeout=timeout)
 
-    return [list_directory, read_file, search_code, edit_file, create_file, run_command]
+    return [list_directory, read_file, search_code, edit_file, replace_lines,
+            create_file, run_command]

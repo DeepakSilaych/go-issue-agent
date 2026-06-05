@@ -566,13 +566,25 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
                 edit_locations=state["edit_locations_text"],
             )
             status = "incomplete"
+            messages = [SystemMessage(content=system_prompt), HumanMessage(content=prompt)]
             try:
-                out = agent.invoke(
-                    {"messages": [SystemMessage(content=system_prompt),
-                                  HumanMessage(content=prompt)]},
-                    config={"recursion_limit": MAX_PATCH_RECURSION},
-                )
+                out = agent.invoke({"messages": messages}, config={"recursion_limit": MAX_PATCH_RECURSION})
                 status = _text(out["messages"][-1]).strip()[:80] or status
+                # Retry once if the patch is test-only: a fix must change source.
+                if get_diff(wt) != "(no changes)" and not _has_source_edit(get_diff(wt)):
+                    print(f"    [C{cid}] Patch is test-only — retrying with a source-edit instruction.")
+                    follow_up = HumanMessage(content=(
+                        "Your change so far edits only a test file, which does NOT fix the issue. "
+                        "The broken behaviour lives in a non-test `.go` source file "
+                        f"(candidates: {state['edit_locations_text']}). Read that source file and "
+                        "modify it to actually fix the issue, then keep the test. Respond DONE when the "
+                        "source is changed."
+                    ))
+                    out = agent.invoke(
+                        {"messages": out["messages"] + [follow_up]},
+                        config={"recursion_limit": MAX_PATCH_RECURSION},
+                    )
+                    status = _text(out["messages"][-1]).strip()[:80] or status
             except Exception as e:
                 status = f"error: {type(e).__name__}: {e}"[:80]
 

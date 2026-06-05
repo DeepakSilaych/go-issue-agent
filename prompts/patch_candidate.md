@@ -32,7 +32,9 @@ Implement the fix using tools. Candidate {candidate_id} should follow the strate
 **Tools available:**
 - `read_file(path, start_line?, end_line?)` — always read before editing
 - `search_code(pattern, path?)` — grep for patterns
-- `edit_file(path, old_content, new_content)` — precise replacement
+- `edit_file(path, old_content, new_content)` — precise exact-match replacement
+- `replace_lines(path, start_line, end_line, new_content)` — replace a line range; use this
+  when `edit_file` can't match (e.g. editing inside a large embedded string literal/template)
 - `create_file(path, content)` — new files
 - `run_command(command)` — `go build ./...`, `go test ./...`, `go vet ./...`, `gofmt -w .`
 
