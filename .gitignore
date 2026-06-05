@@ -1,8 +1,15 @@
 .env
+.venv/
+venv/
 workspace/
 output/
-indexes/
 __pycache__/
 *.pyc
 *.patch
 .DS_Store
+
+# Generated indexes are ignored by default, but we ship one pre-built index
+# (spf13/cobra) so the agent's PR-retrieval works on a fresh clone.
+indexes/*
+!indexes/spf13_cobra
+!indexes/spf13_cobra/**

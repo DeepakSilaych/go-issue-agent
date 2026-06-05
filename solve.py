@@ -30,7 +30,7 @@ if env_file.exists():
 PROVIDER_DEFAULTS = {
     "anthropic": "claude-sonnet-4-6",
     "groq":      "llama-3.3-70b-versatile",
-    "azure":     "gpt-5.4-mini",    # overridden by AZURE_OPENAI_DEPLOYMENT if set
+    "azure":     "gpt-4o",          # overridden by AZURE_OPENAI_DEPLOYMENT if set
 }
 
 

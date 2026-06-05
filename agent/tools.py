@@ -138,8 +138,6 @@ TOOL_DEFINITIONS = [
 class ToolExecutor:
     """Executes tool calls made by the Claude agent."""
 
-    ALLOWED_COMMAND_PREFIXES = ("go ", "git ", "gofmt", "golangci-lint")
-
     def __init__(self, repo_path: str):
         self.repo_path = Path(repo_path).resolve()
 

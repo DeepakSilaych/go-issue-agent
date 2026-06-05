@@ -251,7 +251,10 @@ class Pipeline:
         print(f"  Debug: saved candidate diff to {debug_patch} ({len(best['diff'])} bytes)")
 
         # Apply best candidate diff to main working tree
-        self._apply_candidate_diff(best["diff"])
+        best["applied"] = self._apply_candidate_diff(best["diff"])
+        if best["diff"] != "(no changes)" and not best["applied"]:
+            print("  WARNING: best candidate diff did not apply cleanly — "
+                  "the PR summary below may not reflect the working tree.")
         return best
 
     def _run_candidate(
@@ -338,14 +341,14 @@ class Pipeline:
                 "status": status,
             }
 
-    def _apply_candidate_diff(self, diff: str):
-        """Apply a diff to the main working tree."""
+    def _apply_candidate_diff(self, diff: str) -> bool:
+        """Apply a diff to the main working tree. Returns True on success."""
         if not diff or diff == "(no changes)":
-            return
+            return False
         # Validate it's a real unified diff (must have --- / +++ headers)
         if "--- " not in diff or "+++ " not in diff:
             print(f"  Warning: diff doesn't look like a unified diff ({len(diff)} bytes) — skipping apply")
-            return
+            return False
         # Reset main working tree before applying so we don't get conflicts
         subprocess.run(["git", "checkout", "--", "."], cwd=self.repo_path, capture_output=True)
         try:
@@ -370,6 +373,8 @@ class Pipeline:
                 )
                 if proc.returncode != 0:
                     print(f"  Warning: 3-way apply also failed: {proc.stderr[:200]}")
+                    return False
+                return True
             else:
                 subprocess.run(
                     ["git", "apply", "--whitespace=nowarn"],
@@ -380,8 +385,10 @@ class Pipeline:
                     check=True,
                 )
                 print("  Applied diff successfully.")
+                return True
         except Exception as e:
             print(f"  Warning: could not apply diff: {e}")
+            return False
 
     # ------------------------------------------------------------------
     # Phase 5: Validate + self-heal + PR summary
@@ -421,6 +428,9 @@ class Pipeline:
             "tests_pass": tests_pass,
             "test_output": test_output,
             "build_ok": build_ok,
+            "vet_ok": vet_ok,
+            "vet_output": vet_out,
+            "diff_applied": candidate.get("applied", final_diff != "(no changes)"),
             "pr_summary": pr_summary,
             "candidate_id": candidate["candidate_id"],
         }

@@ -1,0 +1,5202 @@
+[
+  {
+    "file": "active_help.go",
+    "line": 38,
+    "kind": "func",
+    "name": "AppendActiveHelp",
+    "signature": "func AppendActiveHelp(compArray []Completion, activeHelpStr string) []Completion {",
+    "comment": "AppendActiveHelp adds the specified string to the specified array to be used as ActiveHelp. Such strings will be processed by the completion script and will be shown as ActiveHelp"
+  },
+  {
+    "file": "active_help.go",
+    "line": 47,
+    "kind": "func",
+    "name": "GetActiveHelpConfig",
+    "signature": "func GetActiveHelpConfig(cmd *Command) string {",
+    "comment": "GetActiveHelpConfig returns the value of the ActiveHelp environment variable <PROGRAM>_ACTIVE_HELP where <PROGRAM> is the name of the root command in upper"
+  },
+  {
+    "file": "active_help.go",
+    "line": 58,
+    "kind": "func",
+    "name": "activeHelpEnvVar",
+    "signature": "func activeHelpEnvVar(name string) string {",
+    "comment": "activeHelpEnvVar returns the name of the program-specific ActiveHelp environment variable.  It has the format <PROGRAM>_ACTIVE_HELP where <PROGRAM> is the name of the"
+  },
+  {
+    "file": "active_help_test.go",
+    "line": 29,
+    "kind": "func",
+    "name": "TestActiveHelpAlone",
+    "signature": "func TestActiveHelpAlone(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "active_help_test.go",
+    "line": 84,
+    "kind": "func",
+    "name": "TestActiveHelpWithComps",
+    "signature": "func TestActiveHelpWithComps(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "active_help_test.go",
+    "line": 169,
+    "kind": "func",
+    "name": "TestMultiActiveHelp",
+    "signature": "func TestMultiActiveHelp(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "active_help_test.go",
+    "line": 231,
+    "kind": "func",
+    "name": "TestActiveHelpForFlag",
+    "signature": "func TestActiveHelpForFlag(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "active_help_test.go",
+    "line": 266,
+    "kind": "func",
+    "name": "TestConfigActiveHelp",
+    "signature": "func TestConfigActiveHelp(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "active_help_test.go",
+    "line": 319,
+    "kind": "func",
+    "name": "TestDisableActiveHelp",
+    "signature": "func TestDisableActiveHelp(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args.go",
+    "line": 22,
+    "kind": "type",
+    "name": "PositionalArgs",
+    "signature": "type PositionalArgs func(cmd *Command, args []string) error",
+    "comment": ""
+  },
+  {
+    "file": "args.go",
+    "line": 28,
+    "kind": "func",
+    "name": "legacyArgs",
+    "signature": "func legacyArgs(cmd *Command, args []string) error {",
+    "comment": "legacyArgs validation has the following behaviour: - root commands with no subcommands can take arbitrary arguments"
+  },
+  {
+    "file": "args.go",
+    "line": 42,
+    "kind": "func",
+    "name": "NoArgs",
+    "signature": "func NoArgs(cmd *Command, args []string) error {",
+    "comment": "NoArgs returns an error if any args are included."
+  },
+  {
+    "file": "args.go",
+    "line": 51,
+    "kind": "func",
+    "name": "OnlyValidArgs",
+    "signature": "func OnlyValidArgs(cmd *Command, args []string) error {",
+    "comment": "OnlyValidArgs returns an error if there are any positional args that are not in the `ValidArgs` field of `Command`"
+  },
+  {
+    "file": "args.go",
+    "line": 69,
+    "kind": "func",
+    "name": "NoDuplicateArgs",
+    "signature": "func NoDuplicateArgs(cmd *Command, args []string) error {",
+    "comment": "NoDuplicateArgs returns an error if there are any duplicate positional args."
+  },
+  {
+    "file": "args.go",
+    "line": 82,
+    "kind": "func",
+    "name": "ArbitraryArgs",
+    "signature": "func ArbitraryArgs(cmd *Command, args []string) error {",
+    "comment": "ArbitraryArgs never returns an error."
+  },
+  {
+    "file": "args.go",
+    "line": 87,
+    "kind": "func",
+    "name": "MinimumNArgs",
+    "signature": "func MinimumNArgs(n int) PositionalArgs {",
+    "comment": "MinimumNArgs returns an error if there is not at least N args."
+  },
+  {
+    "file": "args.go",
+    "line": 97,
+    "kind": "func",
+    "name": "MaximumNArgs",
+    "signature": "func MaximumNArgs(n int) PositionalArgs {",
+    "comment": "MaximumNArgs returns an error if there are more than N args."
+  },
+  {
+    "file": "args.go",
+    "line": 107,
+    "kind": "func",
+    "name": "ExactArgs",
+    "signature": "func ExactArgs(n int) PositionalArgs {",
+    "comment": "ExactArgs returns an error if there are not exactly n args."
+  },
+  {
+    "file": "args.go",
+    "line": 117,
+    "kind": "func",
+    "name": "RangeArgs",
+    "signature": "func RangeArgs(min int, max int) PositionalArgs {",
+    "comment": "RangeArgs returns an error if the number of args is not within the expected range."
+  },
+  {
+    "file": "args.go",
+    "line": 127,
+    "kind": "func",
+    "name": "MatchAll",
+    "signature": "func MatchAll(pargs ...PositionalArgs) PositionalArgs {",
+    "comment": "MatchAll allows combining several PositionalArgs to work in concert."
+  },
+  {
+    "file": "args.go",
+    "line": 142,
+    "kind": "func",
+    "name": "ExactValidArgs",
+    "signature": "func ExactValidArgs(n int) PositionalArgs {",
+    "comment": "ExactValidArgs returns an error if there are not exactly N positional args OR there are any positional args that are not in the `ValidArgs` field of `Command`"
+  },
+  {
+    "file": "args_test.go",
+    "line": 23,
+    "kind": "func",
+    "name": "getCommand",
+    "signature": "func getCommand(args PositionalArgs, withValid bool) *Command {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 35,
+    "kind": "func",
+    "name": "expectSuccess",
+    "signature": "func expectSuccess(output string, err error, t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 44,
+    "kind": "func",
+    "name": "validOnlyWithInvalidArgs",
+    "signature": "func validOnlyWithInvalidArgs(err error, t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 55,
+    "kind": "func",
+    "name": "noArgsWithArgs",
+    "signature": "func noArgsWithArgs(err error, t *testing.T, arg string) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 66,
+    "kind": "func",
+    "name": "minimumNArgsWithLessArgs",
+    "signature": "func minimumNArgsWithLessArgs(err error, t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 77,
+    "kind": "func",
+    "name": "maximumNArgsWithMoreArgs",
+    "signature": "func maximumNArgsWithMoreArgs(err error, t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 88,
+    "kind": "func",
+    "name": "exactArgsWithInvalidCount",
+    "signature": "func exactArgsWithInvalidCount(err error, t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 99,
+    "kind": "func",
+    "name": "rangeArgsWithInvalidCount",
+    "signature": "func rangeArgsWithInvalidCount(err error, t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 110,
+    "kind": "func",
+    "name": "noDuplicateArgsWithDuplicate",
+    "signature": "func noDuplicateArgsWithDuplicate(err error, t *testing.T, arg string) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 123,
+    "kind": "func",
+    "name": "TestNoArgs",
+    "signature": "func TestNoArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 129,
+    "kind": "func",
+    "name": "TestNoArgs_WithArgs",
+    "signature": "func TestNoArgs_WithArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 135,
+    "kind": "func",
+    "name": "TestNoArgs_WithValid_WithArgs",
+    "signature": "func TestNoArgs_WithValid_WithArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 141,
+    "kind": "func",
+    "name": "TestNoArgs_WithValid_WithInvalidArgs",
+    "signature": "func TestNoArgs_WithValid_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 147,
+    "kind": "func",
+    "name": "TestNoArgs_WithValidOnly_WithInvalidArgs",
+    "signature": "func TestNoArgs_WithValidOnly_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 155,
+    "kind": "func",
+    "name": "TestOnlyValidArgs",
+    "signature": "func TestOnlyValidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 161,
+    "kind": "func",
+    "name": "TestOnlyValidArgs_WithInvalidArgs",
+    "signature": "func TestOnlyValidArgs_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 169,
+    "kind": "func",
+    "name": "TestNoDuplicateArgs",
+    "signature": "func TestNoDuplicateArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 175,
+    "kind": "func",
+    "name": "TestNoDuplicateArgs_WithDuplicateArgs",
+    "signature": "func TestNoDuplicateArgs_WithDuplicateArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 181,
+    "kind": "func",
+    "name": "TestNoDuplicateArgs_WithValid_WithDuplicateArgs",
+    "signature": "func TestNoDuplicateArgs_WithValid_WithDuplicateArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 187,
+    "kind": "func",
+    "name": "TestNoDuplicateArgs_WithValidOnly_WithInvalidArgs",
+    "signature": "func TestNoDuplicateArgs_WithValidOnly_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 195,
+    "kind": "func",
+    "name": "TestArbitraryArgs",
+    "signature": "func TestArbitraryArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 201,
+    "kind": "func",
+    "name": "TestArbitraryArgs_WithValid",
+    "signature": "func TestArbitraryArgs_WithValid(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 207,
+    "kind": "func",
+    "name": "TestArbitraryArgs_WithValid_WithInvalidArgs",
+    "signature": "func TestArbitraryArgs_WithValid_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 213,
+    "kind": "func",
+    "name": "TestArbitraryArgs_WithValidOnly_WithInvalidArgs",
+    "signature": "func TestArbitraryArgs_WithValidOnly_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 221,
+    "kind": "func",
+    "name": "TestMinimumNArgs",
+    "signature": "func TestMinimumNArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 227,
+    "kind": "func",
+    "name": "TestMinimumNArgs_WithValid",
+    "signature": "func TestMinimumNArgs_WithValid(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 233,
+    "kind": "func",
+    "name": "TestMinimumNArgs_WithValid__WithInvalidArgs",
+    "signature": "func TestMinimumNArgs_WithValid__WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 239,
+    "kind": "func",
+    "name": "TestMinimumNArgs_WithValidOnly_WithInvalidArgs",
+    "signature": "func TestMinimumNArgs_WithValidOnly_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 245,
+    "kind": "func",
+    "name": "TestMinimumNArgs_WithLessArgs",
+    "signature": "func TestMinimumNArgs_WithLessArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 251,
+    "kind": "func",
+    "name": "TestMinimumNArgs_WithLessArgs_WithValid",
+    "signature": "func TestMinimumNArgs_WithLessArgs_WithValid(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 257,
+    "kind": "func",
+    "name": "TestMinimumNArgs_WithLessArgs_WithValid_WithInvalidArgs",
+    "signature": "func TestMinimumNArgs_WithLessArgs_WithValid_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 263,
+    "kind": "func",
+    "name": "TestMinimumNArgs_WithLessArgs_WithValidOnly_WithInvalidArgs",
+    "signature": "func TestMinimumNArgs_WithLessArgs_WithValidOnly_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 271,
+    "kind": "func",
+    "name": "TestMaximumNArgs",
+    "signature": "func TestMaximumNArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 277,
+    "kind": "func",
+    "name": "TestMaximumNArgs_WithValid",
+    "signature": "func TestMaximumNArgs_WithValid(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 283,
+    "kind": "func",
+    "name": "TestMaximumNArgs_WithValid_WithInvalidArgs",
+    "signature": "func TestMaximumNArgs_WithValid_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 289,
+    "kind": "func",
+    "name": "TestMaximumNArgs_WithValidOnly_WithInvalidArgs",
+    "signature": "func TestMaximumNArgs_WithValidOnly_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 295,
+    "kind": "func",
+    "name": "TestMaximumNArgs_WithMoreArgs",
+    "signature": "func TestMaximumNArgs_WithMoreArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 301,
+    "kind": "func",
+    "name": "TestMaximumNArgs_WithMoreArgs_WithValid",
+    "signature": "func TestMaximumNArgs_WithMoreArgs_WithValid(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 307,
+    "kind": "func",
+    "name": "TestMaximumNArgs_WithMoreArgs_WithValid_WithInvalidArgs",
+    "signature": "func TestMaximumNArgs_WithMoreArgs_WithValid_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 313,
+    "kind": "func",
+    "name": "TestMaximumNArgs_WithMoreArgs_WithValidOnly_WithInvalidArgs",
+    "signature": "func TestMaximumNArgs_WithMoreArgs_WithValidOnly_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 321,
+    "kind": "func",
+    "name": "TestExactArgs",
+    "signature": "func TestExactArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 327,
+    "kind": "func",
+    "name": "TestExactArgs_WithValid",
+    "signature": "func TestExactArgs_WithValid(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 333,
+    "kind": "func",
+    "name": "TestExactArgs_WithValid_WithInvalidArgs",
+    "signature": "func TestExactArgs_WithValid_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 339,
+    "kind": "func",
+    "name": "TestExactArgs_WithValidOnly_WithInvalidArgs",
+    "signature": "func TestExactArgs_WithValidOnly_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 345,
+    "kind": "func",
+    "name": "TestExactArgs_WithInvalidCount",
+    "signature": "func TestExactArgs_WithInvalidCount(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 351,
+    "kind": "func",
+    "name": "TestExactArgs_WithInvalidCount_WithValid",
+    "signature": "func TestExactArgs_WithInvalidCount_WithValid(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 357,
+    "kind": "func",
+    "name": "TestExactArgs_WithInvalidCount_WithValid_WithInvalidArgs",
+    "signature": "func TestExactArgs_WithInvalidCount_WithValid_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 363,
+    "kind": "func",
+    "name": "TestExactArgs_WithInvalidCount_WithValidOnly_WithInvalidArgs",
+    "signature": "func TestExactArgs_WithInvalidCount_WithValidOnly_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 371,
+    "kind": "func",
+    "name": "TestRangeArgs",
+    "signature": "func TestRangeArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 377,
+    "kind": "func",
+    "name": "TestRangeArgs_WithValid",
+    "signature": "func TestRangeArgs_WithValid(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 383,
+    "kind": "func",
+    "name": "TestRangeArgs_WithValid_WithInvalidArgs",
+    "signature": "func TestRangeArgs_WithValid_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 389,
+    "kind": "func",
+    "name": "TestRangeArgs_WithValidOnly_WithInvalidArgs",
+    "signature": "func TestRangeArgs_WithValidOnly_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 395,
+    "kind": "func",
+    "name": "TestRangeArgs_WithInvalidCount",
+    "signature": "func TestRangeArgs_WithInvalidCount(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 401,
+    "kind": "func",
+    "name": "TestRangeArgs_WithInvalidCount_WithValid",
+    "signature": "func TestRangeArgs_WithInvalidCount_WithValid(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 407,
+    "kind": "func",
+    "name": "TestRangeArgs_WithInvalidCount_WithValid_WithInvalidArgs",
+    "signature": "func TestRangeArgs_WithInvalidCount_WithValid_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 413,
+    "kind": "func",
+    "name": "TestRangeArgs_WithInvalidCount_WithValidOnly_WithInvalidArgs",
+    "signature": "func TestRangeArgs_WithInvalidCount_WithValidOnly_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 421,
+    "kind": "func",
+    "name": "TestRootTakesNoArgs",
+    "signature": "func TestRootTakesNoArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 438,
+    "kind": "func",
+    "name": "TestRootTakesArgs",
+    "signature": "func TestRootTakesArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 449,
+    "kind": "func",
+    "name": "TestChildTakesNoArgs",
+    "signature": "func TestChildTakesNoArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 466,
+    "kind": "func",
+    "name": "TestChildTakesArgs",
+    "signature": "func TestChildTakesArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 477,
+    "kind": "func",
+    "name": "TestMatchAll",
+    "signature": "func TestMatchAll(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 527,
+    "kind": "func",
+    "name": "TestExactValidArgs",
+    "signature": "func TestExactValidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 533,
+    "kind": "func",
+    "name": "TestExactValidArgs_WithInvalidCount",
+    "signature": "func TestExactValidArgs_WithInvalidCount(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 539,
+    "kind": "func",
+    "name": "TestExactValidArgs_WithInvalidCount_WithInvalidArgs",
+    "signature": "func TestExactValidArgs_WithInvalidCount_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 545,
+    "kind": "func",
+    "name": "TestExactValidArgs_WithInvalidArgs",
+    "signature": "func TestExactValidArgs_WithInvalidArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "args_test.go",
+    "line": 555,
+    "kind": "func",
+    "name": "TestLegacyArgsRootAcceptsArgs",
+    "signature": "func TestLegacyArgsRootAcceptsArgs(t *testing.T) {",
+    "comment": "This test make sure we keep backwards-compatibility with respect to the legacyArgs() function."
+  },
+  {
+    "file": "args_test.go",
+    "line": 567,
+    "kind": "func",
+    "name": "TestLegacyArgsSubcmdAcceptsArgs",
+    "signature": "func TestLegacyArgsSubcmdAcceptsArgs(t *testing.T) {",
+    "comment": "This test make sure we keep backwards-compatibility with respect to the legacyArgs() function."
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 36,
+    "kind": "func",
+    "name": "writePreamble",
+    "signature": "func writePreamble(buf io.StringWriter, name string) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 404,
+    "kind": "func",
+    "name": "writePostscript",
+    "signature": "func writePostscript(buf io.StringWriter, name string) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 447,
+    "kind": "func",
+    "name": "writeCommands",
+    "signature": "func writeCommands(buf io.StringWriter, cmd *Command) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 459,
+    "kind": "func",
+    "name": "writeFlagHandler",
+    "signature": "func writeFlagHandler(buf io.StringWriter, name string, annotations map[string][]string, cmd *Command) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 495,
+    "kind": "const",
+    "name": "cbn",
+    "signature": "const cbn = \"\\\")\\n\"",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 497,
+    "kind": "func",
+    "name": "writeShortFlag",
+    "signature": "func writeShortFlag(buf io.StringWriter, flag *pflag.Flag, cmd *Command) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 508,
+    "kind": "func",
+    "name": "writeFlag",
+    "signature": "func writeFlag(buf io.StringWriter, flag *pflag.Flag, cmd *Command) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 523,
+    "kind": "func",
+    "name": "writeLocalNonPersistentFlag",
+    "signature": "func writeLocalNonPersistentFlag(buf io.StringWriter, flag *pflag.Flag) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 536,
+    "kind": "func",
+    "name": "prepareCustomAnnotationsForFlags",
+    "signature": "func prepareCustomAnnotationsForFlags(cmd *Command) {",
+    "comment": "prepareCustomAnnotationsForFlags setup annotations for go completions for registered flags"
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 551,
+    "kind": "func",
+    "name": "writeFlags",
+    "signature": "func writeFlags(buf io.StringWriter, cmd *Command) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 593,
+    "kind": "func",
+    "name": "writeRequiredFlag",
+    "signature": "func writeRequiredFlag(buf io.StringWriter, cmd *Command) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 615,
+    "kind": "func",
+    "name": "writeRequiredNouns",
+    "signature": "func writeRequiredNouns(buf io.StringWriter, cmd *Command) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 629,
+    "kind": "func",
+    "name": "writeCmdAliases",
+    "signature": "func writeCmdAliases(buf io.StringWriter, cmd *Command) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 644,
+    "kind": "func",
+    "name": "writeArgAliases",
+    "signature": "func writeArgAliases(buf io.StringWriter, cmd *Command) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 652,
+    "kind": "func",
+    "name": "gen",
+    "signature": "func gen(buf io.StringWriter, cmd *Command) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 683,
+    "kind": "method",
+    "name": "GenBashCompletion",
+    "signature": "func (c *Command) GenBashCompletion(w io.Writer) error {",
+    "comment": "GenBashCompletion generates bash completion file and writes to the passed writer."
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 696,
+    "kind": "func",
+    "name": "nonCompletableFlag",
+    "signature": "func nonCompletableFlag(flag *pflag.Flag) bool {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions.go",
+    "line": 701,
+    "kind": "method",
+    "name": "GenBashCompletionFile",
+    "signature": "func (c *Command) GenBashCompletionFile(filename string) error {",
+    "comment": "GenBashCompletionFile generates bash completion file."
+  },
+  {
+    "file": "bash_completionsV2.go",
+    "line": 24,
+    "kind": "method",
+    "name": "genBashCompletion",
+    "signature": "func (c *Command) genBashCompletion(w io.Writer, includeDesc bool) error {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completionsV2.go",
+    "line": 31,
+    "kind": "func",
+    "name": "genBashComp",
+    "signature": "func genBashComp(buf io.StringWriter, name string, includeDesc bool) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completionsV2.go",
+    "line": 470,
+    "kind": "method",
+    "name": "GenBashCompletionFileV2",
+    "signature": "func (c *Command) GenBashCompletionFileV2(filename string, includeDesc bool) error {",
+    "comment": "GenBashCompletionFileV2 generates Bash completion version 2."
+  },
+  {
+    "file": "bash_completionsV2.go",
+    "line": 482,
+    "kind": "method",
+    "name": "GenBashCompletionV2",
+    "signature": "func (c *Command) GenBashCompletionV2(w io.Writer, includeDesc bool) error {",
+    "comment": "GenBashCompletionV2 generates Bash completion file version 2 and writes it to the passed writer."
+  },
+  {
+    "file": "bash_completionsV2_test.go",
+    "line": 23,
+    "kind": "func",
+    "name": "TestBashCompletionV2WithActiveHelp",
+    "signature": "func TestBashCompletionV2WithActiveHelp(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions_test.go",
+    "line": 27,
+    "kind": "func",
+    "name": "checkOmit",
+    "signature": "func checkOmit(t *testing.T, found, unexpected string) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions_test.go",
+    "line": 33,
+    "kind": "func",
+    "name": "check",
+    "signature": "func check(t *testing.T, found, expected string) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions_test.go",
+    "line": 39,
+    "kind": "func",
+    "name": "checkNumOccurrences",
+    "signature": "func checkNumOccurrences(t *testing.T, found, expected string, expectedOccurrences int) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions_test.go",
+    "line": 46,
+    "kind": "func",
+    "name": "checkRegex",
+    "signature": "func checkRegex(t *testing.T, found, pattern string) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions_test.go",
+    "line": 56,
+    "kind": "func",
+    "name": "runShellCheck",
+    "signature": "func runShellCheck(s string) error {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions_test.go",
+    "line": 78,
+    "kind": "const",
+    "name": "bashCompletionFunc",
+    "signature": "const bashCompletionFunc = `__root_custom_func() {",
+    "comment": "World worst custom function, just keep telling you to enter hello!"
+  },
+  {
+    "file": "bash_completions_test.go",
+    "line": 83,
+    "kind": "func",
+    "name": "TestBashCompletions",
+    "signature": "func TestBashCompletions(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions_test.go",
+    "line": 229,
+    "kind": "func",
+    "name": "TestBashCompletionHiddenFlag",
+    "signature": "func TestBashCompletionHiddenFlag(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions_test.go",
+    "line": 245,
+    "kind": "func",
+    "name": "TestBashCompletionDeprecatedFlag",
+    "signature": "func TestBashCompletionDeprecatedFlag(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions_test.go",
+    "line": 261,
+    "kind": "func",
+    "name": "TestBashCompletionTraverseChildren",
+    "signature": "func TestBashCompletionTraverseChildren(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "bash_completions_test.go",
+    "line": 279,
+    "kind": "func",
+    "name": "TestBashCompletionNoActiveHelp",
+    "signature": "func TestBashCompletionNoActiveHelp(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "cobra.go",
+    "line": 32,
+    "kind": "var",
+    "name": "templateFuncs",
+    "signature": "var templateFuncs = template.FuncMap{",
+    "comment": ""
+  },
+  {
+    "file": "cobra.go",
+    "line": 42,
+    "kind": "var",
+    "name": "initializers",
+    "signature": "var initializers []func()",
+    "comment": ""
+  },
+  {
+    "file": "cobra.go",
+    "line": 43,
+    "kind": "var",
+    "name": "finalizers",
+    "signature": "var finalizers []func()",
+    "comment": ""
+  },
+  {
+    "file": "cobra.go",
+    "line": 55,
+    "kind": "var",
+    "name": "EnablePrefixMatching",
+    "signature": "var EnablePrefixMatching = defaultPrefixMatching",
+    "comment": "EnablePrefixMatching allows setting automatic prefix matching. Automatic prefix matching can be a dangerous thing to automatically enable in CLI tools."
+  },
+  {
+    "file": "cobra.go",
+    "line": 59,
+    "kind": "var",
+    "name": "EnableCommandSorting",
+    "signature": "var EnableCommandSorting = defaultCommandSorting",
+    "comment": "EnableCommandSorting controls sorting of the slice of commands, which is turned on by default. To disable sorting, set it to false."
+  },
+  {
+    "file": "cobra.go",
+    "line": 62,
+    "kind": "var",
+    "name": "EnableCaseInsensitive",
+    "signature": "var EnableCaseInsensitive = defaultCaseInsensitive",
+    "comment": "EnableCaseInsensitive allows case-insensitive commands names. (case sensitive by default)"
+  },
+  {
+    "file": "cobra.go",
+    "line": 66,
+    "kind": "var",
+    "name": "EnableTraverseRunHooks",
+    "signature": "var EnableTraverseRunHooks = defaultTraverseRunHooks",
+    "comment": "EnableTraverseRunHooks executes persistent pre-run and post-run hooks from all parents. By default this is disabled, which means only the first run hook to be found is executed."
+  },
+  {
+    "file": "cobra.go",
+    "line": 72,
+    "kind": "var",
+    "name": "MousetrapHelpText",
+    "signature": "var MousetrapHelpText = `This is a command line tool.",
+    "comment": "MousetrapHelpText enables an information splash screen on Windows if the CLI is started from explorer.exe."
+  },
+  {
+    "file": "cobra.go",
+    "line": 81,
+    "kind": "var",
+    "name": "MousetrapDisplayDuration",
+    "signature": "var MousetrapDisplayDuration = 5 * time.Second",
+    "comment": "MousetrapDisplayDuration controls how long the MousetrapHelpText message is displayed on Windows if the CLI is started from explorer.exe. Set to 0 to wait for the return key to be pressed."
+  },
+  {
+    "file": "cobra.go",
+    "line": 85,
+    "kind": "func",
+    "name": "AddTemplateFunc",
+    "signature": "func AddTemplateFunc(name string, tmplFunc interface{}) {",
+    "comment": "AddTemplateFunc adds a template function that's available to Usage and Help template generation."
+  },
+  {
+    "file": "cobra.go",
+    "line": 91,
+    "kind": "func",
+    "name": "AddTemplateFuncs",
+    "signature": "func AddTemplateFuncs(tmplFuncs template.FuncMap) {",
+    "comment": "AddTemplateFuncs adds multiple template functions that are available to Usage and Help template generation."
+  },
+  {
+    "file": "cobra.go",
+    "line": 99,
+    "kind": "func",
+    "name": "OnInitialize",
+    "signature": "func OnInitialize(y ...func()) {",
+    "comment": "OnInitialize sets the passed functions to be run when each command's Execute method is called."
+  },
+  {
+    "file": "cobra.go",
+    "line": 105,
+    "kind": "func",
+    "name": "OnFinalize",
+    "signature": "func OnFinalize(y ...func()) {",
+    "comment": "OnFinalize sets the passed functions to be run when each command's Execute method is terminated."
+  },
+  {
+    "file": "cobra.go",
+    "line": 114,
+    "kind": "func",
+    "name": "Gt",
+    "signature": "func Gt(a interface{}, b interface{}) bool {",
+    "comment": "Gt takes two types and checks whether the first type is greater than the second. In case of types Arrays, Chans, Maps and Slices, Gt will compare their lengths. Ints are compared directly while strings are first parsed as"
+  },
+  {
+    "file": "cobra.go",
+    "line": 144,
+    "kind": "func",
+    "name": "Eq",
+    "signature": "func Eq(a interface{}, b interface{}) bool {",
+    "comment": "Eq takes two types and checks whether they are equal. Supported types are int and string. Unsupported types will panic."
+  },
+  {
+    "file": "cobra.go",
+    "line": 159,
+    "kind": "func",
+    "name": "trimRightSpace",
+    "signature": "func trimRightSpace(s string) string {",
+    "comment": ""
+  },
+  {
+    "file": "cobra.go",
+    "line": 166,
+    "kind": "func",
+    "name": "appendIfNotPresent",
+    "signature": "func appendIfNotPresent(s, stringToAppend string) string {",
+    "comment": "appendIfNotPresent will append stringToAppend to the end of s, but only if it's not yet present in s."
+  },
+  {
+    "file": "cobra.go",
+    "line": 174,
+    "kind": "func",
+    "name": "rpad",
+    "signature": "func rpad(s string, padding int) string {",
+    "comment": "rpad adds padding to the right of a string."
+  },
+  {
+    "file": "cobra.go",
+    "line": 179,
+    "kind": "func",
+    "name": "tmpl",
+    "signature": "func tmpl(text string) *tmplFunc {",
+    "comment": ""
+  },
+  {
+    "file": "cobra.go",
+    "line": 192,
+    "kind": "func",
+    "name": "ld",
+    "signature": "func ld(s, t string, ignoreCase bool) int {",
+    "comment": "ld compares two strings and returns the levenshtein distance between them."
+  },
+  {
+    "file": "cobra.go",
+    "line": 225,
+    "kind": "func",
+    "name": "stringInSlice",
+    "signature": "func stringInSlice(a string, list []string) bool {",
+    "comment": ""
+  },
+  {
+    "file": "cobra.go",
+    "line": 235,
+    "kind": "func",
+    "name": "CheckErr",
+    "signature": "func CheckErr(msg interface{}) {",
+    "comment": "CheckErr prints the msg with the prefix 'Error:' and exits with error code 1. If the msg is nil, it does nothing."
+  },
+  {
+    "file": "cobra.go",
+    "line": 243,
+    "kind": "func",
+    "name": "WriteStringAndCheck",
+    "signature": "func WriteStringAndCheck(b io.StringWriter, s string) {",
+    "comment": "WriteStringAndCheck writes a string into a buffer, and checks if the error is not nil."
+  },
+  {
+    "file": "cobra_test.go",
+    "line": 27,
+    "kind": "func",
+    "name": "assertNoErr",
+    "signature": "func assertNoErr(t *testing.T, e error) {",
+    "comment": ""
+  },
+  {
+    "file": "cobra_test.go",
+    "line": 33,
+    "kind": "func",
+    "name": "TestAddTemplateFunctions",
+    "signature": "func TestAddTemplateFunctions(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "cobra_test.go",
+    "line": 49,
+    "kind": "func",
+    "name": "TestLevenshteinDistance",
+    "signature": "func TestLevenshteinDistance(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "cobra_test.go",
+    "line": 121,
+    "kind": "func",
+    "name": "TestStringInSlice",
+    "signature": "func TestStringInSlice(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "cobra_test.go",
+    "line": 185,
+    "kind": "func",
+    "name": "TestRpad",
+    "signature": "func TestRpad(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "cobra_test.go",
+    "line": 245,
+    "kind": "func",
+    "name": "TestDeadcodeElimination",
+    "signature": "func TestDeadcodeElimination(t *testing.T) {",
+    "comment": "TestDeadcodeElimination checks that a simple program using cobra in its default configuration is linked taking full advantage of the linker's"
+  },
+  {
+    "file": "cobra_test.go",
+    "line": 268,
+    "kind": "var",
+    "name": "rootCmd",
+    "signature": "var rootCmd = &cobra.Command{",
+    "comment": ""
+  },
+  {
+    "file": "cobra_test.go",
+    "line": 279,
+    "kind": "func",
+    "name": "main",
+    "signature": "func main() {",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 42,
+    "kind": "type",
+    "name": "FParseErrWhitelist",
+    "signature": "type FParseErrWhitelist flag.ParseErrorsAllowlist",
+    "comment": "FParseErrWhitelist configures Flag parse errors to be ignored"
+  },
+  {
+    "file": "command.go",
+    "line": 45,
+    "kind": "type",
+    "name": "Group",
+    "signature": "type Group struct {",
+    "comment": "Group Structure to manage groups for commands"
+  },
+  {
+    "file": "command.go",
+    "line": 54,
+    "kind": "type",
+    "name": "Command",
+    "signature": "type Command struct {",
+    "comment": "Command is just that, a command for your application. E.g.  'go run ...' - 'run' is the command. Cobra requires"
+  },
+  {
+    "file": "command.go",
+    "line": 269,
+    "kind": "method",
+    "name": "Context",
+    "signature": "func (c *Command) Context() context.Context {",
+    "comment": "Context returns underlying command context. If command was executed with ExecuteContext or the context was set with SetContext, the"
+  },
+  {
+    "file": "command.go",
+    "line": 275,
+    "kind": "method",
+    "name": "SetContext",
+    "signature": "func (c *Command) SetContext(ctx context.Context) {",
+    "comment": "SetContext sets context for the command. This context will be overwritten by Command.ExecuteContext or Command.ExecuteContextC."
+  },
+  {
+    "file": "command.go",
+    "line": 281,
+    "kind": "method",
+    "name": "SetArgs",
+    "signature": "func (c *Command) SetArgs(a []string) {",
+    "comment": "SetArgs sets arguments for the command. It is set to os.Args[1:] by default, if desired, can be overridden particularly useful when testing."
+  },
+  {
+    "file": "command.go",
+    "line": 289,
+    "kind": "method",
+    "name": "SetOutput",
+    "signature": "func (c *Command) SetOutput(output io.Writer) {",
+    "comment": "SetOutput sets the destination for usage and error messages. If output is nil, os.Stderr is used."
+  },
+  {
+    "file": "command.go",
+    "line": 296,
+    "kind": "method",
+    "name": "SetOut",
+    "signature": "func (c *Command) SetOut(newOut io.Writer) {",
+    "comment": "SetOut sets the destination for usage messages. If newOut is nil, os.Stdout is used."
+  },
+  {
+    "file": "command.go",
+    "line": 302,
+    "kind": "method",
+    "name": "SetErr",
+    "signature": "func (c *Command) SetErr(newErr io.Writer) {",
+    "comment": "SetErr sets the destination for error messages. If newErr is nil, os.Stderr is used."
+  },
+  {
+    "file": "command.go",
+    "line": 308,
+    "kind": "method",
+    "name": "SetIn",
+    "signature": "func (c *Command) SetIn(newIn io.Reader) {",
+    "comment": "SetIn sets the source for input data If newIn is nil, os.Stdin is used."
+  },
+  {
+    "file": "command.go",
+    "line": 313,
+    "kind": "method",
+    "name": "SetUsageFunc",
+    "signature": "func (c *Command) SetUsageFunc(f func(*Command) error) {",
+    "comment": "SetUsageFunc sets usage function. Usage can be defined by application."
+  },
+  {
+    "file": "command.go",
+    "line": 318,
+    "kind": "method",
+    "name": "SetUsageTemplate",
+    "signature": "func (c *Command) SetUsageTemplate(s string) {",
+    "comment": "SetUsageTemplate sets usage template. Can be defined by Application."
+  },
+  {
+    "file": "command.go",
+    "line": 328,
+    "kind": "method",
+    "name": "SetFlagErrorFunc",
+    "signature": "func (c *Command) SetFlagErrorFunc(f func(*Command, error) error) {",
+    "comment": "SetFlagErrorFunc sets a function to generate an error when flag parsing fails."
+  },
+  {
+    "file": "command.go",
+    "line": 333,
+    "kind": "method",
+    "name": "SetHelpFunc",
+    "signature": "func (c *Command) SetHelpFunc(f func(*Command, []string)) {",
+    "comment": "SetHelpFunc sets help function. Can be defined by Application."
+  },
+  {
+    "file": "command.go",
+    "line": 338,
+    "kind": "method",
+    "name": "SetHelpCommand",
+    "signature": "func (c *Command) SetHelpCommand(cmd *Command) {",
+    "comment": "SetHelpCommand sets help command."
+  },
+  {
+    "file": "command.go",
+    "line": 343,
+    "kind": "method",
+    "name": "SetHelpCommandGroupID",
+    "signature": "func (c *Command) SetHelpCommandGroupID(groupID string) {",
+    "comment": "SetHelpCommandGroupID sets the group id of the help command."
+  },
+  {
+    "file": "command.go",
+    "line": 352,
+    "kind": "method",
+    "name": "SetCompletionCommandGroupID",
+    "signature": "func (c *Command) SetCompletionCommandGroupID(groupID string) {",
+    "comment": "SetCompletionCommandGroupID sets the group id of the completion command."
+  },
+  {
+    "file": "command.go",
+    "line": 358,
+    "kind": "method",
+    "name": "SetHelpTemplate",
+    "signature": "func (c *Command) SetHelpTemplate(s string) {",
+    "comment": "SetHelpTemplate sets help template to be used. Application can use it to set custom template."
+  },
+  {
+    "file": "command.go",
+    "line": 367,
+    "kind": "method",
+    "name": "SetVersionTemplate",
+    "signature": "func (c *Command) SetVersionTemplate(s string) {",
+    "comment": "SetVersionTemplate sets version template to be used. Application can use it to set custom template."
+  },
+  {
+    "file": "command.go",
+    "line": 376,
+    "kind": "method",
+    "name": "SetErrPrefix",
+    "signature": "func (c *Command) SetErrPrefix(s string) {",
+    "comment": "SetErrPrefix sets error message prefix to be used. Application can use it to set custom prefix."
+  },
+  {
+    "file": "command.go",
+    "line": 382,
+    "kind": "method",
+    "name": "SetGlobalNormalizationFunc",
+    "signature": "func (c *Command) SetGlobalNormalizationFunc(n func(f *flag.FlagSet, name string) flag.NormalizedName) {",
+    "comment": "SetGlobalNormalizationFunc sets a normalization function to all flag sets and also to child commands. The user should not have a cyclic dependency on commands."
+  },
+  {
+    "file": "command.go",
+    "line": 393,
+    "kind": "method",
+    "name": "OutOrStdout",
+    "signature": "func (c *Command) OutOrStdout() io.Writer {",
+    "comment": "OutOrStdout returns output to stdout."
+  },
+  {
+    "file": "command.go",
+    "line": 398,
+    "kind": "method",
+    "name": "OutOrStderr",
+    "signature": "func (c *Command) OutOrStderr() io.Writer {",
+    "comment": "OutOrStderr returns output to stderr"
+  },
+  {
+    "file": "command.go",
+    "line": 403,
+    "kind": "method",
+    "name": "ErrOrStderr",
+    "signature": "func (c *Command) ErrOrStderr() io.Writer {",
+    "comment": "ErrOrStderr returns output to stderr"
+  },
+  {
+    "file": "command.go",
+    "line": 408,
+    "kind": "method",
+    "name": "InOrStdin",
+    "signature": "func (c *Command) InOrStdin() io.Reader {",
+    "comment": "InOrStdin returns input to stdin"
+  },
+  {
+    "file": "command.go",
+    "line": 412,
+    "kind": "method",
+    "name": "getOut",
+    "signature": "func (c *Command) getOut(def io.Writer) io.Writer {",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 422,
+    "kind": "method",
+    "name": "getErr",
+    "signature": "func (c *Command) getErr(def io.Writer) io.Writer {",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 432,
+    "kind": "method",
+    "name": "getIn",
+    "signature": "func (c *Command) getIn(def io.Reader) io.Reader {",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 444,
+    "kind": "method",
+    "name": "UsageFunc",
+    "signature": "func (c *Command) UsageFunc() (f func(*Command) error) {",
+    "comment": "UsageFunc returns either the function set by SetUsageFunc for this command or a parent, or it returns a default usage function."
+  },
+  {
+    "file": "command.go",
+    "line": 464,
+    "kind": "method",
+    "name": "getUsageTemplateFunc",
+    "signature": "func (c *Command) getUsageTemplateFunc() func(w io.Writer, data interface{}) error {",
+    "comment": "getUsageTemplateFunc returns the usage template function for the command going up the command tree if necessary."
+  },
+  {
+    "file": "command.go",
+    "line": 478,
+    "kind": "method",
+    "name": "Usage",
+    "signature": "func (c *Command) Usage() error {",
+    "comment": "Usage puts out the usage for the command. Used when a user provides invalid input."
+  },
+  {
+    "file": "command.go",
+    "line": 484,
+    "kind": "method",
+    "name": "HelpFunc",
+    "signature": "func (c *Command) HelpFunc() func(*Command, []string) {",
+    "comment": "HelpFunc returns either the function set by SetHelpFunc for this command or a parent, or it returns a function with default help behavior."
+  },
+  {
+    "file": "command.go",
+    "line": 505,
+    "kind": "method",
+    "name": "getHelpTemplateFunc",
+    "signature": "func (c *Command) getHelpTemplateFunc() func(w io.Writer, data interface{}) error {",
+    "comment": "getHelpTemplateFunc returns the help template function for the command going up the command tree if necessary."
+  },
+  {
+    "file": "command.go",
+    "line": 520,
+    "kind": "method",
+    "name": "Help",
+    "signature": "func (c *Command) Help() error {",
+    "comment": "Help puts out the help for the command. Used when a user calls help [command]."
+  },
+  {
+    "file": "command.go",
+    "line": 526,
+    "kind": "method",
+    "name": "UsageString",
+    "signature": "func (c *Command) UsageString() string {",
+    "comment": "UsageString returns usage string."
+  },
+  {
+    "file": "command.go",
+    "line": 547,
+    "kind": "method",
+    "name": "FlagErrorFunc",
+    "signature": "func (c *Command) FlagErrorFunc() (f func(*Command, error) error) {",
+    "comment": "FlagErrorFunc returns either the function set by SetFlagErrorFunc for this command or a parent, or it returns a function which returns the original"
+  },
+  {
+    "file": "command.go",
+    "line": 560,
+    "kind": "const",
+    "name": "minUsagePadding",
+    "signature": "const minUsagePadding = 25",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 563,
+    "kind": "method",
+    "name": "UsagePadding",
+    "signature": "func (c *Command) UsagePadding() int {",
+    "comment": "UsagePadding return padding for the usage."
+  },
+  {
+    "file": "command.go",
+    "line": 570,
+    "kind": "const",
+    "name": "minCommandPathPadding",
+    "signature": "const minCommandPathPadding = 11",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 573,
+    "kind": "method",
+    "name": "CommandPathPadding",
+    "signature": "func (c *Command) CommandPathPadding() int {",
+    "comment": "CommandPathPadding return padding for the command path."
+  },
+  {
+    "file": "command.go",
+    "line": 580,
+    "kind": "const",
+    "name": "minNamePadding",
+    "signature": "const minNamePadding = 11",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 583,
+    "kind": "method",
+    "name": "NamePadding",
+    "signature": "func (c *Command) NamePadding() int {",
+    "comment": "NamePadding returns padding for the name."
+  },
+  {
+    "file": "command.go",
+    "line": 592,
+    "kind": "method",
+    "name": "UsageTemplate",
+    "signature": "func (c *Command) UsageTemplate() string {",
+    "comment": "UsageTemplate returns usage template for the command. This function is kept for backwards-compatibility reasons."
+  },
+  {
+    "file": "command.go",
+    "line": 605,
+    "kind": "method",
+    "name": "HelpTemplate",
+    "signature": "func (c *Command) HelpTemplate() string {",
+    "comment": "HelpTemplate return help template for the command. This function is kept for backwards-compatibility reasons."
+  },
+  {
+    "file": "command.go",
+    "line": 618,
+    "kind": "method",
+    "name": "VersionTemplate",
+    "signature": "func (c *Command) VersionTemplate() string {",
+    "comment": "VersionTemplate return version template for the command. This function is kept for backwards-compatibility reasons."
+  },
+  {
+    "file": "command.go",
+    "line": 631,
+    "kind": "method",
+    "name": "getVersionTemplateFunc",
+    "signature": "func (c *Command) getVersionTemplateFunc() func(w io.Writer, data interface{}) error {",
+    "comment": "getVersionTemplateFunc returns the version template function for the command going up the command tree if necessary."
+  },
+  {
+    "file": "command.go",
+    "line": 643,
+    "kind": "method",
+    "name": "ErrPrefix",
+    "signature": "func (c *Command) ErrPrefix() string {",
+    "comment": "ErrPrefix return error message prefix for the command"
+  },
+  {
+    "file": "command.go",
+    "line": 654,
+    "kind": "func",
+    "name": "hasNoOptDefVal",
+    "signature": "func hasNoOptDefVal(name string, fs *flag.FlagSet) bool {",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 662,
+    "kind": "func",
+    "name": "shortHasNoOptDefVal",
+    "signature": "func shortHasNoOptDefVal(name string, fs *flag.FlagSet) bool {",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 674,
+    "kind": "func",
+    "name": "stripFlags",
+    "signature": "func stripFlags(args []string, c *Command) []string {",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 715,
+    "kind": "method",
+    "name": "argsMinusFirstX",
+    "signature": "func (c *Command) argsMinusFirstX(args []string, x string) []string {",
+    "comment": "argsMinusFirstX removes only the first x from args.  Otherwise, commands that look like openshift admin policy add-role-to-user admin my-user, lose the admin argument (arg[4])."
+  },
+  {
+    "file": "command.go",
+    "line": 750,
+    "kind": "func",
+    "name": "isFlagArg",
+    "signature": "func isFlagArg(arg string) bool {",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 757,
+    "kind": "method",
+    "name": "Find",
+    "signature": "func (c *Command) Find(args []string) (*Command, []string, error) {",
+    "comment": "Find the target command given the args and command tree Meant to be run on the highest node. Only searches down."
+  },
+  {
+    "file": "command.go",
+    "line": 781,
+    "kind": "method",
+    "name": "findSuggestions",
+    "signature": "func (c *Command) findSuggestions(arg string) string {",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 798,
+    "kind": "method",
+    "name": "findNext",
+    "signature": "func (c *Command) findNext(next string) *Command {",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 821,
+    "kind": "method",
+    "name": "Traverse",
+    "signature": "func (c *Command) Traverse(args []string) (*Command, []string, error) {",
+    "comment": "Traverse the command tree to find the command, and parse args for each parent."
+  },
+  {
+    "file": "command.go",
+    "line": 863,
+    "kind": "method",
+    "name": "SuggestionsFor",
+    "signature": "func (c *Command) SuggestionsFor(typedName string) []string {",
+    "comment": "SuggestionsFor provides suggestions for the typedName."
+  },
+  {
+    "file": "command.go",
+    "line": 884,
+    "kind": "method",
+    "name": "VisitParents",
+    "signature": "func (c *Command) VisitParents(fn func(*Command)) {",
+    "comment": "VisitParents visits all parents of the command and invokes fn on each parent."
+  },
+  {
+    "file": "command.go",
+    "line": 892,
+    "kind": "method",
+    "name": "Root",
+    "signature": "func (c *Command) Root() *Command {",
+    "comment": "Root finds root command."
+  },
+  {
+    "file": "command.go",
+    "line": 901,
+    "kind": "method",
+    "name": "ArgsLenAtDash",
+    "signature": "func (c *Command) ArgsLenAtDash() int {",
+    "comment": "ArgsLenAtDash will return the length of c.Flags().Args at the moment when a -- was found during args parsing."
+  },
+  {
+    "file": "command.go",
+    "line": 905,
+    "kind": "method",
+    "name": "execute",
+    "signature": "func (c *Command) execute(a []string) (err error) {",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 1047,
+    "kind": "method",
+    "name": "preRun",
+    "signature": "func (c *Command) preRun() {",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 1053,
+    "kind": "method",
+    "name": "postRun",
+    "signature": "func (c *Command) postRun() {",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 1062,
+    "kind": "method",
+    "name": "ExecuteContext",
+    "signature": "func (c *Command) ExecuteContext(ctx context.Context) error {",
+    "comment": "ExecuteContext is the same as Execute(), but sets the ctx on the command. Retrieve ctx by calling cmd.Context() inside your *Run lifecycle or ValidArgs"
+  },
+  {
+    "file": "command.go",
+    "line": 1070,
+    "kind": "method",
+    "name": "Execute",
+    "signature": "func (c *Command) Execute() error {",
+    "comment": "Execute uses the args (os.Args[1:] by default) and run through the command tree finding appropriate matches"
+  },
+  {
+    "file": "command.go",
+    "line": 1078,
+    "kind": "method",
+    "name": "ExecuteContextC",
+    "signature": "func (c *Command) ExecuteContextC(ctx context.Context) (*Command, error) {",
+    "comment": "ExecuteContextC is the same as ExecuteC(), but sets the ctx on the command. Retrieve ctx by calling cmd.Context() inside your *Run lifecycle or ValidArgs"
+  },
+  {
+    "file": "command.go",
+    "line": 1084,
+    "kind": "method",
+    "name": "ExecuteC",
+    "signature": "func (c *Command) ExecuteC() (cmd *Command, err error) {",
+    "comment": "ExecuteC executes the command."
+  },
+  {
+    "file": "command.go",
+    "line": 1172,
+    "kind": "method",
+    "name": "ValidateArgs",
+    "signature": "func (c *Command) ValidateArgs(args []string) error {",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 1180,
+    "kind": "method",
+    "name": "ValidateRequiredFlags",
+    "signature": "func (c *Command) ValidateRequiredFlags() error {",
+    "comment": "ValidateRequiredFlags validates all required flags are present and returns an error otherwise"
+  },
+  {
+    "file": "command.go",
+    "line": 1205,
+    "kind": "method",
+    "name": "checkCommandGroups",
+    "signature": "func (c *Command) checkCommandGroups() {",
+    "comment": "checkCommandGroups checks if a command has been added to a group that does not exists. If so, we panic because it indicates a coding error that should be corrected."
+  },
+  {
+    "file": "command.go",
+    "line": 1219,
+    "kind": "method",
+    "name": "InitDefaultHelpFlag",
+    "signature": "func (c *Command) InitDefaultHelpFlag() {",
+    "comment": "InitDefaultHelpFlag adds default help flag to c. It is called automatically by executing the c or by calling help and usage."
+  },
+  {
+    "file": "command.go",
+    "line": 1238,
+    "kind": "method",
+    "name": "InitDefaultVersionFlag",
+    "signature": "func (c *Command) InitDefaultVersionFlag() {",
+    "comment": "InitDefaultVersionFlag adds default version flag to c. It is called automatically by executing the c."
+  },
+  {
+    "file": "command.go",
+    "line": 1263,
+    "kind": "method",
+    "name": "InitDefaultHelpCmd",
+    "signature": "func (c *Command) InitDefaultHelpCmd() {",
+    "comment": "InitDefaultHelpCmd adds default help command to c. It is called automatically by executing the c or by calling help and usage."
+  },
+  {
+    "file": "command.go",
+    "line": 1317,
+    "kind": "method",
+    "name": "ResetCommands",
+    "signature": "func (c *Command) ResetCommands() {",
+    "comment": "ResetCommands delete parent, subcommand and help command from c."
+  },
+  {
+    "file": "command.go",
+    "line": 1325,
+    "kind": "type",
+    "name": "commandSorterByName",
+    "signature": "type commandSorterByName []*Command",
+    "comment": "Sorts commands by their names."
+  },
+  {
+    "file": "command.go",
+    "line": 1327,
+    "kind": "method",
+    "name": "Len",
+    "signature": "func (c commandSorterByName) Len() int           { return len(c) }",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 1328,
+    "kind": "method",
+    "name": "Swap",
+    "signature": "func (c commandSorterByName) Swap(i, j int)      { c[i], c[j] = c[j], c[i] }",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 1329,
+    "kind": "method",
+    "name": "Less",
+    "signature": "func (c commandSorterByName) Less(i, j int) bool { return c[i].Name() < c[j].Name() }",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 1332,
+    "kind": "method",
+    "name": "Commands",
+    "signature": "func (c *Command) Commands() []*Command {",
+    "comment": "Commands returns a sorted slice of child commands."
+  },
+  {
+    "file": "command.go",
+    "line": 1342,
+    "kind": "method",
+    "name": "AddCommand",
+    "signature": "func (c *Command) AddCommand(cmds ...*Command) {",
+    "comment": "AddCommand adds one or more commands to this parent command."
+  },
+  {
+    "file": "command.go",
+    "line": 1371,
+    "kind": "method",
+    "name": "Groups",
+    "signature": "func (c *Command) Groups() []*Group {",
+    "comment": "Groups returns a slice of child command groups."
+  },
+  {
+    "file": "command.go",
+    "line": 1376,
+    "kind": "method",
+    "name": "AllChildCommandsHaveGroup",
+    "signature": "func (c *Command) AllChildCommandsHaveGroup() bool {",
+    "comment": "AllChildCommandsHaveGroup returns if all subcommands are assigned to a group"
+  },
+  {
+    "file": "command.go",
+    "line": 1386,
+    "kind": "method",
+    "name": "ContainsGroup",
+    "signature": "func (c *Command) ContainsGroup(groupID string) bool {",
+    "comment": "ContainsGroup return if groupID exists in the list of command groups."
+  },
+  {
+    "file": "command.go",
+    "line": 1396,
+    "kind": "method",
+    "name": "AddGroup",
+    "signature": "func (c *Command) AddGroup(groups ...*Group) {",
+    "comment": "AddGroup adds one or more command groups to this parent command."
+  },
+  {
+    "file": "command.go",
+    "line": 1401,
+    "kind": "method",
+    "name": "RemoveCommand",
+    "signature": "func (c *Command) RemoveCommand(cmds ...*Command) {",
+    "comment": "RemoveCommand removes one or more commands from a parent command."
+  },
+  {
+    "file": "command.go",
+    "line": 1435,
+    "kind": "method",
+    "name": "Print",
+    "signature": "func (c *Command) Print(i ...interface{}) {",
+    "comment": "Print is a convenience method to Print to the defined output, fallback to Stderr if not set."
+  },
+  {
+    "file": "command.go",
+    "line": 1440,
+    "kind": "method",
+    "name": "Println",
+    "signature": "func (c *Command) Println(i ...interface{}) {",
+    "comment": "Println is a convenience method to Println to the defined output, fallback to Stderr if not set."
+  },
+  {
+    "file": "command.go",
+    "line": 1445,
+    "kind": "method",
+    "name": "Printf",
+    "signature": "func (c *Command) Printf(format string, i ...interface{}) {",
+    "comment": "Printf is a convenience method to Printf to the defined output, fallback to Stderr if not set."
+  },
+  {
+    "file": "command.go",
+    "line": 1450,
+    "kind": "method",
+    "name": "PrintErr",
+    "signature": "func (c *Command) PrintErr(i ...interface{}) {",
+    "comment": "PrintErr is a convenience method to Print to the defined Err output, fallback to Stderr if not set."
+  },
+  {
+    "file": "command.go",
+    "line": 1455,
+    "kind": "method",
+    "name": "PrintErrln",
+    "signature": "func (c *Command) PrintErrln(i ...interface{}) {",
+    "comment": "PrintErrln is a convenience method to Println to the defined Err output, fallback to Stderr if not set."
+  },
+  {
+    "file": "command.go",
+    "line": 1460,
+    "kind": "method",
+    "name": "PrintErrf",
+    "signature": "func (c *Command) PrintErrf(format string, i ...interface{}) {",
+    "comment": "PrintErrf is a convenience method to Printf to the defined Err output, fallback to Stderr if not set."
+  },
+  {
+    "file": "command.go",
+    "line": 1465,
+    "kind": "method",
+    "name": "CommandPath",
+    "signature": "func (c *Command) CommandPath() string {",
+    "comment": "CommandPath returns the full path to this command."
+  },
+  {
+    "file": "command.go",
+    "line": 1474,
+    "kind": "method",
+    "name": "DisplayName",
+    "signature": "func (c *Command) DisplayName() string {",
+    "comment": "DisplayName returns the name to display in help text. Returns command Name() If CommandDisplayNameAnnoation is not set"
+  },
+  {
+    "file": "command.go",
+    "line": 1482,
+    "kind": "method",
+    "name": "UseLine",
+    "signature": "func (c *Command) UseLine() string {",
+    "comment": "UseLine puts out the full usage for a given command (including parents)."
+  },
+  {
+    "file": "command.go",
+    "line": 1501,
+    "kind": "method",
+    "name": "DebugFlags",
+    "signature": "func (c *Command) DebugFlags() {",
+    "comment": "DebugFlags used to determine which flags have been assigned to which commands and which persist."
+  },
+  {
+    "file": "command.go",
+    "line": 1541,
+    "kind": "method",
+    "name": "Name",
+    "signature": "func (c *Command) Name() string {",
+    "comment": "Name returns the command's name: the first word in the use line."
+  },
+  {
+    "file": "command.go",
+    "line": 1551,
+    "kind": "method",
+    "name": "HasAlias",
+    "signature": "func (c *Command) HasAlias(s string) bool {",
+    "comment": "HasAlias determines if a given string is an alias of the command."
+  },
+  {
+    "file": "command.go",
+    "line": 1562,
+    "kind": "method",
+    "name": "CalledAs",
+    "signature": "func (c *Command) CalledAs() string {",
+    "comment": "CalledAs returns the command name or alias that was used to invoke this command or an empty string if the command has not been called."
+  },
+  {
+    "file": "command.go",
+    "line": 1571,
+    "kind": "method",
+    "name": "hasNameOrAliasPrefix",
+    "signature": "func (c *Command) hasNameOrAliasPrefix(prefix string) bool {",
+    "comment": "hasNameOrAliasPrefix returns true if the Name or any of aliases start with prefix"
+  },
+  {
+    "file": "command.go",
+    "line": 1586,
+    "kind": "method",
+    "name": "NameAndAliases",
+    "signature": "func (c *Command) NameAndAliases() string {",
+    "comment": "NameAndAliases returns a list of the command name and all aliases"
+  },
+  {
+    "file": "command.go",
+    "line": 1591,
+    "kind": "method",
+    "name": "HasExample",
+    "signature": "func (c *Command) HasExample() bool {",
+    "comment": "HasExample determines if the command has example."
+  },
+  {
+    "file": "command.go",
+    "line": 1596,
+    "kind": "method",
+    "name": "Runnable",
+    "signature": "func (c *Command) Runnable() bool {",
+    "comment": "Runnable determines if the command is itself runnable."
+  },
+  {
+    "file": "command.go",
+    "line": 1601,
+    "kind": "method",
+    "name": "HasSubCommands",
+    "signature": "func (c *Command) HasSubCommands() bool {",
+    "comment": "HasSubCommands determines if the command has children commands."
+  },
+  {
+    "file": "command.go",
+    "line": 1607,
+    "kind": "method",
+    "name": "IsAvailableCommand",
+    "signature": "func (c *Command) IsAvailableCommand() bool {",
+    "comment": "IsAvailableCommand determines if a command is available as a non-help command (this includes all non deprecated/hidden commands)."
+  },
+  {
+    "file": "command.go",
+    "line": 1628,
+    "kind": "method",
+    "name": "IsAdditionalHelpTopicCommand",
+    "signature": "func (c *Command) IsAdditionalHelpTopicCommand() bool {",
+    "comment": "IsAdditionalHelpTopicCommand determines if a command is an additional help topic command; additional help topic command is determined by the"
+  },
+  {
+    "file": "command.go",
+    "line": 1648,
+    "kind": "method",
+    "name": "HasHelpSubCommands",
+    "signature": "func (c *Command) HasHelpSubCommands() bool {",
+    "comment": "HasHelpSubCommands determines if a command has any available 'help' sub commands that need to be shown in the usage/help default template under 'additional help"
+  },
+  {
+    "file": "command.go",
+    "line": 1662,
+    "kind": "method",
+    "name": "HasAvailableSubCommands",
+    "signature": "func (c *Command) HasAvailableSubCommands() bool {",
+    "comment": "HasAvailableSubCommands determines if a command has available sub commands that need to be shown in the usage/help default template under 'available commands'."
+  },
+  {
+    "file": "command.go",
+    "line": 1677,
+    "kind": "method",
+    "name": "HasParent",
+    "signature": "func (c *Command) HasParent() bool {",
+    "comment": "HasParent determines if the command is a child command."
+  },
+  {
+    "file": "command.go",
+    "line": 1682,
+    "kind": "method",
+    "name": "GlobalNormalizationFunc",
+    "signature": "func (c *Command) GlobalNormalizationFunc() func(f *flag.FlagSet, name string) flag.NormalizedName {",
+    "comment": "GlobalNormalizationFunc returns the global normalization function or nil if it doesn't exist."
+  },
+  {
+    "file": "command.go",
+    "line": 1688,
+    "kind": "method",
+    "name": "Flags",
+    "signature": "func (c *Command) Flags() *flag.FlagSet {",
+    "comment": "Flags returns the complete FlagSet that applies to this command (local and persistent declared here and by all parents)."
+  },
+  {
+    "file": "command.go",
+    "line": 1702,
+    "kind": "method",
+    "name": "LocalNonPersistentFlags",
+    "signature": "func (c *Command) LocalNonPersistentFlags() *flag.FlagSet {",
+    "comment": "LocalNonPersistentFlags are flags specific to this command which will NOT persist to subcommands. This function does not modify the flags of the current command, it's purpose is to return the current state."
+  },
+  {
+    "file": "command.go",
+    "line": 1716,
+    "kind": "method",
+    "name": "LocalFlags",
+    "signature": "func (c *Command) LocalFlags() *flag.FlagSet {",
+    "comment": "LocalFlags returns the local FlagSet specifically set in the current command. This function does not modify the flags of the current command, it's purpose is to return the current state."
+  },
+  {
+    "file": "command.go",
+    "line": 1744,
+    "kind": "method",
+    "name": "InheritedFlags",
+    "signature": "func (c *Command) InheritedFlags() *flag.FlagSet {",
+    "comment": "InheritedFlags returns all flags which were inherited from parent commands. This function does not modify the flags of the current command, it's purpose is to return the current state."
+  },
+  {
+    "file": "command.go",
+    "line": 1770,
+    "kind": "method",
+    "name": "NonInheritedFlags",
+    "signature": "func (c *Command) NonInheritedFlags() *flag.FlagSet {",
+    "comment": "NonInheritedFlags returns all flags which were not inherited from parent commands. This function does not modify the flags of the current command, it's purpose is to return the current state."
+  },
+  {
+    "file": "command.go",
+    "line": 1775,
+    "kind": "method",
+    "name": "PersistentFlags",
+    "signature": "func (c *Command) PersistentFlags() *flag.FlagSet {",
+    "comment": "PersistentFlags returns the persistent FlagSet specifically set in the current command."
+  },
+  {
+    "file": "command.go",
+    "line": 1787,
+    "kind": "method",
+    "name": "ResetFlags",
+    "signature": "func (c *Command) ResetFlags() {",
+    "comment": "ResetFlags deletes all flags from command."
+  },
+  {
+    "file": "command.go",
+    "line": 1801,
+    "kind": "method",
+    "name": "HasFlags",
+    "signature": "func (c *Command) HasFlags() bool {",
+    "comment": "HasFlags checks if the command contains any flags (local plus persistent from the entire structure)."
+  },
+  {
+    "file": "command.go",
+    "line": 1806,
+    "kind": "method",
+    "name": "HasPersistentFlags",
+    "signature": "func (c *Command) HasPersistentFlags() bool {",
+    "comment": "HasPersistentFlags checks if the command contains persistent flags."
+  },
+  {
+    "file": "command.go",
+    "line": 1811,
+    "kind": "method",
+    "name": "HasLocalFlags",
+    "signature": "func (c *Command) HasLocalFlags() bool {",
+    "comment": "HasLocalFlags checks if the command has flags specifically declared locally."
+  },
+  {
+    "file": "command.go",
+    "line": 1816,
+    "kind": "method",
+    "name": "HasInheritedFlags",
+    "signature": "func (c *Command) HasInheritedFlags() bool {",
+    "comment": "HasInheritedFlags checks if the command has flags inherited from its parent command."
+  },
+  {
+    "file": "command.go",
+    "line": 1822,
+    "kind": "method",
+    "name": "HasAvailableFlags",
+    "signature": "func (c *Command) HasAvailableFlags() bool {",
+    "comment": "HasAvailableFlags checks if the command contains any flags (local plus persistent from the entire structure) which are not hidden or deprecated."
+  },
+  {
+    "file": "command.go",
+    "line": 1827,
+    "kind": "method",
+    "name": "HasAvailablePersistentFlags",
+    "signature": "func (c *Command) HasAvailablePersistentFlags() bool {",
+    "comment": "HasAvailablePersistentFlags checks if the command contains persistent flags which are not hidden or deprecated."
+  },
+  {
+    "file": "command.go",
+    "line": 1833,
+    "kind": "method",
+    "name": "HasAvailableLocalFlags",
+    "signature": "func (c *Command) HasAvailableLocalFlags() bool {",
+    "comment": "HasAvailableLocalFlags checks if the command has flags specifically declared locally which are not hidden or deprecated."
+  },
+  {
+    "file": "command.go",
+    "line": 1839,
+    "kind": "method",
+    "name": "HasAvailableInheritedFlags",
+    "signature": "func (c *Command) HasAvailableInheritedFlags() bool {",
+    "comment": "HasAvailableInheritedFlags checks if the command has flags inherited from its parent command which are not hidden or deprecated."
+  },
+  {
+    "file": "command.go",
+    "line": 1844,
+    "kind": "method",
+    "name": "Flag",
+    "signature": "func (c *Command) Flag(name string) (flag *flag.Flag) {",
+    "comment": "Flag climbs up the command tree looking for matching flag."
+  },
+  {
+    "file": "command.go",
+    "line": 1855,
+    "kind": "method",
+    "name": "persistentFlag",
+    "signature": "func (c *Command) persistentFlag(name string) (flag *flag.Flag) {",
+    "comment": "Recursively find matching persistent flag."
+  },
+  {
+    "file": "command.go",
+    "line": 1868,
+    "kind": "method",
+    "name": "ParseFlags",
+    "signature": "func (c *Command) ParseFlags(args []string) error {",
+    "comment": "ParseFlags parses persistent flag tree and local flags."
+  },
+  {
+    "file": "command.go",
+    "line": 1892,
+    "kind": "method",
+    "name": "Parent",
+    "signature": "func (c *Command) Parent() *Command {",
+    "comment": "Parent returns a commands parent command."
+  },
+  {
+    "file": "command.go",
+    "line": 1898,
+    "kind": "method",
+    "name": "mergePersistentFlags",
+    "signature": "func (c *Command) mergePersistentFlags() {",
+    "comment": "mergePersistentFlags merges c.PersistentFlags() to c.Flags() and adds missing persistent flags of all parents."
+  },
+  {
+    "file": "command.go",
+    "line": 1907,
+    "kind": "method",
+    "name": "updateParentsPflags",
+    "signature": "func (c *Command) updateParentsPflags() {",
+    "comment": "updateParentsPflags updates c.parentsPflags by adding new persistent flags of all parents."
+  },
+  {
+    "file": "command.go",
+    "line": 1928,
+    "kind": "func",
+    "name": "commandNameMatches",
+    "signature": "func commandNameMatches(s string, t string) bool {",
+    "comment": "commandNameMatches checks if two command names are equal taking into account case sensitivity according to"
+  },
+  {
+    "file": "command.go",
+    "line": 1937,
+    "kind": "type",
+    "name": "tmplFunc",
+    "signature": "type tmplFunc struct {",
+    "comment": "tmplFunc holds a template and a function that will execute said template."
+  },
+  {
+    "file": "command.go",
+    "line": 1942,
+    "kind": "const",
+    "name": "defaultUsageTemplate",
+    "signature": "const defaultUsageTemplate = `Usage:{{if .Runnable}}",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 1974,
+    "kind": "func",
+    "name": "defaultUsageFunc",
+    "signature": "func defaultUsageFunc(w io.Writer, in interface{}) error {",
+    "comment": "defaultUsageFunc is equivalent to executing defaultUsageTemplate. The two should be changed in sync."
+  },
+  {
+    "file": "command.go",
+    "line": 2042,
+    "kind": "const",
+    "name": "defaultHelpTemplate",
+    "signature": "const defaultHelpTemplate = `{{with (or .Long .Short)}}{{. | trimTrailingWhitespaces}}",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 2047,
+    "kind": "func",
+    "name": "defaultHelpFunc",
+    "signature": "func defaultHelpFunc(w io.Writer, in interface{}) error {",
+    "comment": "defaultHelpFunc is equivalent to executing defaultHelpTemplate. The two should be changed in sync."
+  },
+  {
+    "file": "command.go",
+    "line": 2064,
+    "kind": "const",
+    "name": "defaultVersionTemplate",
+    "signature": "const defaultVersionTemplate = `{{with .DisplayName}}{{printf \"%s \" .}}{{end}}{{printf \"version %s\" .Version}}",
+    "comment": ""
+  },
+  {
+    "file": "command.go",
+    "line": 2068,
+    "kind": "func",
+    "name": "defaultVersionFunc",
+    "signature": "func defaultVersionFunc(w io.Writer, in interface{}) error {",
+    "comment": "defaultVersionFunc is equivalent to executing defaultVersionTemplate. The two should be changed in sync."
+  },
+  {
+    "file": "command_notwin.go",
+    "line": 20,
+    "kind": "var",
+    "name": "preExecHookFn",
+    "signature": "var preExecHookFn func(*Command)",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 30,
+    "kind": "func",
+    "name": "emptyRun",
+    "signature": "func emptyRun(*Command, []string) {}",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 32,
+    "kind": "func",
+    "name": "executeCommand",
+    "signature": "func executeCommand(root *Command, args ...string) (output string, err error) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 37,
+    "kind": "func",
+    "name": "executeCommandWithContext",
+    "signature": "func executeCommandWithContext(ctx context.Context, root *Command, args ...string) (output string, err error) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 48,
+    "kind": "func",
+    "name": "executeCommandC",
+    "signature": "func executeCommandC(root *Command, args ...string) (c *Command, output string, err error) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 59,
+    "kind": "func",
+    "name": "executeCommandWithContextC",
+    "signature": "func executeCommandWithContextC(ctx context.Context, root *Command, args ...string) (c *Command, output string, err erro ...",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 70,
+    "kind": "func",
+    "name": "resetCommandLineFlagSet",
+    "signature": "func resetCommandLineFlagSet() {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 74,
+    "kind": "func",
+    "name": "checkStringContains",
+    "signature": "func checkStringContains(t *testing.T, got, expected string) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 80,
+    "kind": "func",
+    "name": "checkStringOmits",
+    "signature": "func checkStringOmits(t *testing.T, got, expected string) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 86,
+    "kind": "const",
+    "name": "onetwo",
+    "signature": "const onetwo = \"one two\"",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 88,
+    "kind": "func",
+    "name": "TestSingleCommand",
+    "signature": "func TestSingleCommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 113,
+    "kind": "func",
+    "name": "TestChildCommand",
+    "signature": "func TestChildCommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 138,
+    "kind": "func",
+    "name": "TestCallCommandWithoutSubcommands",
+    "signature": "func TestCallCommandWithoutSubcommands(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 146,
+    "kind": "func",
+    "name": "TestRootExecuteUnknownCommand",
+    "signature": "func TestRootExecuteUnknownCommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 159,
+    "kind": "func",
+    "name": "TestSubcommandExecuteC",
+    "signature": "func TestSubcommandExecuteC(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 177,
+    "kind": "func",
+    "name": "TestExecuteContext",
+    "signature": "func TestExecuteContext(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 206,
+    "kind": "func",
+    "name": "TestExecuteContextC",
+    "signature": "func TestExecuteContextC(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 235,
+    "kind": "func",
+    "name": "TestExecute_NoContext",
+    "signature": "func TestExecute_NoContext(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 262,
+    "kind": "func",
+    "name": "TestRootUnknownCommandSilenced",
+    "signature": "func TestRootUnknownCommandSilenced(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 274,
+    "kind": "func",
+    "name": "TestCommandAlias",
+    "signature": "func TestCommandAlias(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 305,
+    "kind": "func",
+    "name": "TestEnablePrefixMatching",
+    "signature": "func TestEnablePrefixMatching(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 334,
+    "kind": "func",
+    "name": "TestAliasPrefixMatching",
+    "signature": "func TestAliasPrefixMatching(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 372,
+    "kind": "func",
+    "name": "TestPlugin",
+    "signature": "func TestPlugin(t *testing.T) {",
+    "comment": "TestPlugin checks usage as plugin for another command such as kubectl.  The executable is `kubectl-plugin`, but we run it as `kubectl plugin`. The help"
+  },
+  {
+    "file": "command_test.go",
+    "line": 394,
+    "kind": "func",
+    "name": "TestPluginWithSubCommands",
+    "signature": "func TestPluginWithSubCommands(t *testing.T) {",
+    "comment": "TestPluginWithSubCommands checks usage as plugin with sub commands."
+  },
+  {
+    "file": "command_test.go",
+    "line": 437,
+    "kind": "func",
+    "name": "TestChildSameName",
+    "signature": "func TestChildSameName(t *testing.T) {",
+    "comment": "TestChildSameName checks the correct behaviour of cobra in cases, when an application with name \"foo\" and with subcommand \"foo\""
+  },
+  {
+    "file": "command_test.go",
+    "line": 465,
+    "kind": "func",
+    "name": "TestGrandChildSameName",
+    "signature": "func TestGrandChildSameName(t *testing.T) {",
+    "comment": "TestGrandChildSameName checks the correct behaviour of cobra in cases, when user has a root command and a grand child"
+  },
+  {
+    "file": "command_test.go",
+    "line": 491,
+    "kind": "func",
+    "name": "TestFlagLong",
+    "signature": "func TestFlagLong(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 528,
+    "kind": "func",
+    "name": "TestFlagShort",
+    "signature": "func TestFlagShort(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 562,
+    "kind": "func",
+    "name": "TestChildFlag",
+    "signature": "func TestChildFlag(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 583,
+    "kind": "func",
+    "name": "TestChildFlagWithParentLocalFlag",
+    "signature": "func TestChildFlagWithParentLocalFlag(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 604,
+    "kind": "func",
+    "name": "TestFlagInvalidInput",
+    "signature": "func TestFlagInvalidInput(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 616,
+    "kind": "func",
+    "name": "TestFlagBeforeCommand",
+    "signature": "func TestFlagBeforeCommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 643,
+    "kind": "func",
+    "name": "TestStripFlags",
+    "signature": "func TestStripFlags(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 716,
+    "kind": "func",
+    "name": "TestDisableFlagParsing",
+    "signature": "func TestDisableFlagParsing(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 740,
+    "kind": "func",
+    "name": "TestPersistentFlagsOnSameCommand",
+    "signature": "func TestPersistentFlagsOnSameCommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 770,
+    "kind": "func",
+    "name": "TestEmptyInputs",
+    "signature": "func TestEmptyInputs(t *testing.T) {",
+    "comment": "TestEmptyInputs checks, if flags correctly parsed with blank strings in args."
+  },
+  {
+    "file": "command_test.go",
+    "line": 789,
+    "kind": "func",
+    "name": "TestChildFlagShadowsParentPersistentFlag",
+    "signature": "func TestChildFlagShadowsParentPersistentFlag(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 818,
+    "kind": "func",
+    "name": "TestPersistentFlagsOnChild",
+    "signature": "func TestPersistentFlagsOnChild(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 853,
+    "kind": "func",
+    "name": "TestRequiredFlags",
+    "signature": "func TestRequiredFlags(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 871,
+    "kind": "func",
+    "name": "TestPersistentRequiredFlags",
+    "signature": "func TestPersistentRequiredFlags(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 896,
+    "kind": "func",
+    "name": "TestPersistentRequiredFlagsWithDisableFlagParsing",
+    "signature": "func TestPersistentRequiredFlagsWithDisableFlagParsing(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 927,
+    "kind": "func",
+    "name": "TestInitHelpFlagMergesFlags",
+    "signature": "func TestInitHelpFlagMergesFlags(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 941,
+    "kind": "func",
+    "name": "TestHelpCommandExecuted",
+    "signature": "func TestHelpCommandExecuted(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 953,
+    "kind": "func",
+    "name": "TestHelpCommandExecutedOnChild",
+    "signature": "func TestHelpCommandExecutedOnChild(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 966,
+    "kind": "func",
+    "name": "TestHelpCommandExecutedOnChildWithFlagThatShadowsParentFlag",
+    "signature": "func TestHelpCommandExecutedOnChildWithFlagThatShadowsParentFlag(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 998,
+    "kind": "func",
+    "name": "TestSetHelpCommand",
+    "signature": "func TestSetHelpCommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1021,
+    "kind": "func",
+    "name": "TestSetHelpTemplate",
+    "signature": "func TestSetHelpTemplate(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1064,
+    "kind": "func",
+    "name": "TestHelpFlagExecuted",
+    "signature": "func TestHelpFlagExecuted(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1075,
+    "kind": "func",
+    "name": "TestHelpFlagExecutedOnChild",
+    "signature": "func TestHelpFlagExecutedOnChild(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1092,
+    "kind": "func",
+    "name": "TestHelpFlagInHelp",
+    "signature": "func TestHelpFlagInHelp(t *testing.T) {",
+    "comment": "TestHelpFlagInHelp checks, if '--help' flag is shown in help for child (executing `parent help child`),"
+  },
+  {
+    "file": "command_test.go",
+    "line": 1106,
+    "kind": "func",
+    "name": "TestFlagsInUsage",
+    "signature": "func TestFlagsInUsage(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1116,
+    "kind": "func",
+    "name": "TestHelpExecutedOnNonRunnableChild",
+    "signature": "func TestHelpExecutedOnNonRunnableChild(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1129,
+    "kind": "func",
+    "name": "TestSetUsageTemplate",
+    "signature": "func TestSetUsageTemplate(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1168,
+    "kind": "func",
+    "name": "TestVersionFlagExecuted",
+    "signature": "func TestVersionFlagExecuted(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1179,
+    "kind": "func",
+    "name": "TestVersionFlagExecutedDiplayName",
+    "signature": "func TestVersionFlagExecutedDiplayName(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1197,
+    "kind": "func",
+    "name": "TestVersionFlagExecutedWithNoName",
+    "signature": "func TestVersionFlagExecutedWithNoName(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1208,
+    "kind": "func",
+    "name": "TestShortAndLongVersionFlagInHelp",
+    "signature": "func TestShortAndLongVersionFlagInHelp(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1219,
+    "kind": "func",
+    "name": "TestLongVersionFlagOnlyInHelpWhenShortPredefined",
+    "signature": "func TestLongVersionFlagOnlyInHelpWhenShortPredefined(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1232,
+    "kind": "func",
+    "name": "TestShorthandVersionFlagExecuted",
+    "signature": "func TestShorthandVersionFlagExecuted(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1243,
+    "kind": "func",
+    "name": "TestVersionTemplate",
+    "signature": "func TestVersionTemplate(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1255,
+    "kind": "func",
+    "name": "TestShorthandVersionTemplate",
+    "signature": "func TestShorthandVersionTemplate(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1267,
+    "kind": "func",
+    "name": "TestRootErrPrefixExecutedOnSubcommand",
+    "signature": "func TestRootErrPrefixExecutedOnSubcommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1280,
+    "kind": "func",
+    "name": "TestRootAndSubErrPrefix",
+    "signature": "func TestRootAndSubErrPrefix(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1300,
+    "kind": "func",
+    "name": "TestVersionFlagExecutedOnSubcommand",
+    "signature": "func TestVersionFlagExecutedOnSubcommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1312,
+    "kind": "func",
+    "name": "TestShorthandVersionFlagExecutedOnSubcommand",
+    "signature": "func TestShorthandVersionFlagExecutedOnSubcommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1324,
+    "kind": "func",
+    "name": "TestVersionFlagOnlyAddedToRoot",
+    "signature": "func TestVersionFlagOnlyAddedToRoot(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1336,
+    "kind": "func",
+    "name": "TestShortVersionFlagOnlyAddedToRoot",
+    "signature": "func TestShortVersionFlagOnlyAddedToRoot(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1348,
+    "kind": "func",
+    "name": "TestVersionFlagOnlyExistsIfVersionNonEmpty",
+    "signature": "func TestVersionFlagOnlyExistsIfVersionNonEmpty(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1358,
+    "kind": "func",
+    "name": "TestShorthandVersionFlagOnlyExistsIfVersionNonEmpty",
+    "signature": "func TestShorthandVersionFlagOnlyExistsIfVersionNonEmpty(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1368,
+    "kind": "func",
+    "name": "TestShorthandVersionFlagOnlyAddedIfShorthandNotDefined",
+    "signature": "func TestShorthandVersionFlagOnlyAddedIfShorthandNotDefined(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1380,
+    "kind": "func",
+    "name": "TestShorthandVersionFlagOnlyAddedIfVersionNotDefined",
+    "signature": "func TestShorthandVersionFlagOnlyAddedIfVersionNotDefined(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1391,
+    "kind": "func",
+    "name": "TestUsageIsNotPrintedTwice",
+    "signature": "func TestUsageIsNotPrintedTwice(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1402,
+    "kind": "func",
+    "name": "TestVisitParents",
+    "signature": "func TestVisitParents(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1431,
+    "kind": "func",
+    "name": "TestSuggestions",
+    "signature": "func TestSuggestions(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1478,
+    "kind": "func",
+    "name": "TestCaseInsensitive",
+    "signature": "func TestCaseInsensitive(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1573,
+    "kind": "func",
+    "name": "TestCaseSensitivityBackwardCompatibility",
+    "signature": "func TestCaseSensitivityBackwardCompatibility(t *testing.T) {",
+    "comment": "This test make sure we keep backwards-compatibility with respect to command names case sensitivity behavior."
+  },
+  {
+    "file": "command_test.go",
+    "line": 1585,
+    "kind": "func",
+    "name": "TestRemoveCommand",
+    "signature": "func TestRemoveCommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1597,
+    "kind": "func",
+    "name": "TestReplaceCommandWithRemove",
+    "signature": "func TestReplaceCommandWithRemove(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1628,
+    "kind": "func",
+    "name": "TestDeprecatedCommand",
+    "signature": "func TestDeprecatedCommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1645,
+    "kind": "func",
+    "name": "TestHooks",
+    "signature": "func TestHooks(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1697,
+    "kind": "func",
+    "name": "TestPersistentHooks",
+    "signature": "func TestPersistentHooks(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1719,
+    "kind": "func",
+    "name": "testPersistentHooks",
+    "signature": "func testPersistentHooks(t *testing.T, expectedHookRunOrder []string) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1789,
+    "kind": "func",
+    "name": "TestGlobalNormFuncPropagation",
+    "signature": "func TestGlobalNormFuncPropagation(t *testing.T) {",
+    "comment": "Related to https://github.com/spf13/cobra/issues/521."
+  },
+  {
+    "file": "command_test.go",
+    "line": 1809,
+    "kind": "func",
+    "name": "TestNormPassedOnLocal",
+    "signature": "func TestNormPassedOnLocal(t *testing.T) {",
+    "comment": "Related to https://github.com/spf13/cobra/issues/521."
+  },
+  {
+    "file": "command_test.go",
+    "line": 1823,
+    "kind": "func",
+    "name": "TestNormPassedOnInherited",
+    "signature": "func TestNormPassedOnInherited(t *testing.T) {",
+    "comment": "Related to https://github.com/spf13/cobra/issues/521."
+  },
+  {
+    "file": "command_test.go",
+    "line": 1851,
+    "kind": "func",
+    "name": "TestConsistentNormalizedName",
+    "signature": "func TestConsistentNormalizedName(t *testing.T) {",
+    "comment": "Related to https://github.com/spf13/cobra/issues/521."
+  },
+  {
+    "file": "command_test.go",
+    "line": 1869,
+    "kind": "func",
+    "name": "TestFlagOnPflagCommandLine",
+    "signature": "func TestFlagOnPflagCommandLine(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1884,
+    "kind": "func",
+    "name": "TestHiddenCommandExecutes",
+    "signature": "func TestHiddenCommandExecutes(t *testing.T) {",
+    "comment": "TestHiddenCommandExecutes checks, if hidden commands run as intended."
+  },
+  {
+    "file": "command_test.go",
+    "line": 1906,
+    "kind": "func",
+    "name": "TestHiddenCommandIsHidden",
+    "signature": "func TestHiddenCommandIsHidden(t *testing.T) {",
+    "comment": "test to ensure hidden commands do not show up in usage/help text"
+  },
+  {
+    "file": "command_test.go",
+    "line": 1913,
+    "kind": "func",
+    "name": "TestCommandsAreSorted",
+    "signature": "func TestCommandsAreSorted(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1935,
+    "kind": "func",
+    "name": "TestEnableCommandSortingIsDisabled",
+    "signature": "func TestEnableCommandSortingIsDisabled(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1956,
+    "kind": "func",
+    "name": "TestUsageWithGroup",
+    "signature": "func TestUsageWithGroup(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1977,
+    "kind": "func",
+    "name": "TestUsageHelpGroup",
+    "signature": "func TestUsageHelpGroup(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 1995,
+    "kind": "func",
+    "name": "TestUsageCompletionGroup",
+    "signature": "func TestUsageCompletionGroup(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2015,
+    "kind": "func",
+    "name": "TestUngroupedCommand",
+    "signature": "func TestUngroupedCommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2037,
+    "kind": "func",
+    "name": "TestAddGroup",
+    "signature": "func TestAddGroup(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2051,
+    "kind": "func",
+    "name": "TestWrongGroupFirstLevel",
+    "signature": "func TestWrongGroupFirstLevel(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2069,
+    "kind": "func",
+    "name": "TestWrongGroupNestedLevel",
+    "signature": "func TestWrongGroupNestedLevel(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2089,
+    "kind": "func",
+    "name": "TestWrongGroupForHelp",
+    "signature": "func TestWrongGroupForHelp(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2109,
+    "kind": "func",
+    "name": "TestWrongGroupForCompletion",
+    "signature": "func TestWrongGroupForCompletion(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2129,
+    "kind": "func",
+    "name": "TestSetOutput",
+    "signature": "func TestSetOutput(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2137,
+    "kind": "func",
+    "name": "TestSetOut",
+    "signature": "func TestSetOut(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2145,
+    "kind": "func",
+    "name": "TestSetErr",
+    "signature": "func TestSetErr(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2153,
+    "kind": "func",
+    "name": "TestSetIn",
+    "signature": "func TestSetIn(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2161,
+    "kind": "func",
+    "name": "TestUsageStringRedirected",
+    "signature": "func TestUsageStringRedirected(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2177,
+    "kind": "func",
+    "name": "TestCommandPrintRedirection",
+    "signature": "func TestCommandPrintRedirection(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2218,
+    "kind": "func",
+    "name": "TestFlagErrorFunc",
+    "signature": "func TestFlagErrorFunc(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2235,
+    "kind": "func",
+    "name": "TestFlagErrorFuncHelp",
+    "signature": "func TestFlagErrorFuncHelp(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2270,
+    "kind": "func",
+    "name": "TestSortedFlags",
+    "signature": "func TestSortedFlags(t *testing.T) {",
+    "comment": "TestSortedFlags checks, if cmd.LocalFlags() is unsorted when cmd.Flags().SortFlags set to false."
+  },
+  {
+    "file": "command_test.go",
+    "line": 2296,
+    "kind": "func",
+    "name": "TestMergeCommandLineToFlags",
+    "signature": "func TestMergeCommandLineToFlags(t *testing.T) {",
+    "comment": "TestMergeCommandLineToFlags checks, if pflag.CommandLine is correctly merged to c.Flags() after first call"
+  },
+  {
+    "file": "command_test.go",
+    "line": 2310,
+    "kind": "func",
+    "name": "TestUseDeprecatedFlags",
+    "signature": "func TestUseDeprecatedFlags(t *testing.T) {",
+    "comment": "TestUseDeprecatedFlags checks, if cobra.Execute() prints a message, if a deprecated flag is used."
+  },
+  {
+    "file": "command_test.go",
+    "line": 2322,
+    "kind": "func",
+    "name": "TestTraverseWithParentFlags",
+    "signature": "func TestTraverseWithParentFlags(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2344,
+    "kind": "func",
+    "name": "TestTraverseNoParentFlags",
+    "signature": "func TestTraverseNoParentFlags(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2364,
+    "kind": "func",
+    "name": "TestTraverseWithBadParentFlags",
+    "signature": "func TestTraverseWithBadParentFlags(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2382,
+    "kind": "func",
+    "name": "TestTraverseWithBadChildFlag",
+    "signature": "func TestTraverseWithBadChildFlag(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2403,
+    "kind": "func",
+    "name": "TestTraverseWithTwoSubcommands",
+    "signature": "func TestTraverseWithTwoSubcommands(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2425,
+    "kind": "func",
+    "name": "TestUpdateName",
+    "signature": "func TestUpdateName(t *testing.T) {",
+    "comment": "TestUpdateName checks if c.Name() updates on changed c.Use. Related to https://github.com/spf13/cobra/pull/422#discussion_r143918343."
+  },
+  {
+    "file": "command_test.go",
+    "line": 2435,
+    "kind": "type",
+    "name": "calledAsTestcase",
+    "signature": "type calledAsTestcase struct {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2442,
+    "kind": "method",
+    "name": "test",
+    "signature": "func (tc *calledAsTestcase) test(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2477,
+    "kind": "func",
+    "name": "TestCalledAs",
+    "signature": "func TestCalledAs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2498,
+    "kind": "func",
+    "name": "TestFParseErrWhitelistBackwardCompatibility",
+    "signature": "func TestFParseErrWhitelistBackwardCompatibility(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2509,
+    "kind": "func",
+    "name": "TestFParseErrWhitelistSameCommand",
+    "signature": "func TestFParseErrWhitelistSameCommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2525,
+    "kind": "func",
+    "name": "TestFParseErrWhitelistParentCommand",
+    "signature": "func TestFParseErrWhitelistParentCommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2549,
+    "kind": "func",
+    "name": "TestFParseErrWhitelistChildCommand",
+    "signature": "func TestFParseErrWhitelistChildCommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2572,
+    "kind": "func",
+    "name": "TestFParseErrWhitelistSiblingCommand",
+    "signature": "func TestFParseErrWhitelistSiblingCommand(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2603,
+    "kind": "func",
+    "name": "TestSetContext",
+    "signature": "func TestSetContext(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2628,
+    "kind": "func",
+    "name": "TestSetContextPreRun",
+    "signature": "func TestSetContextPreRun(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2654,
+    "kind": "func",
+    "name": "TestSetContextPreRunOverwrite",
+    "signature": "func TestSetContextPreRunOverwrite(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2675,
+    "kind": "func",
+    "name": "TestSetContextPersistentPreRun",
+    "signature": "func TestSetContextPersistentPreRun(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2706,
+    "kind": "const",
+    "name": "VersionFlag",
+    "signature": "const VersionFlag = \"--version\"",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2707,
+    "kind": "const",
+    "name": "HelpFlag",
+    "signature": "const HelpFlag = \"--help\"",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2709,
+    "kind": "func",
+    "name": "TestNoRootRunCommandExecutedWithVersionSet",
+    "signature": "func TestNoRootRunCommandExecutedWithVersionSet(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2723,
+    "kind": "func",
+    "name": "TestNoRootRunCommandExecutedWithoutVersionSet",
+    "signature": "func TestNoRootRunCommandExecutedWithoutVersionSet(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2737,
+    "kind": "func",
+    "name": "TestHelpCommandExecutedWithVersionSet",
+    "signature": "func TestHelpCommandExecutedWithVersionSet(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2751,
+    "kind": "func",
+    "name": "TestHelpCommandExecutedWithoutVersionSet",
+    "signature": "func TestHelpCommandExecutedWithoutVersionSet(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2765,
+    "kind": "func",
+    "name": "TestHelpflagCommandExecutedWithVersionSet",
+    "signature": "func TestHelpflagCommandExecutedWithVersionSet(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2779,
+    "kind": "func",
+    "name": "TestHelpflagCommandExecutedWithoutVersionSet",
+    "signature": "func TestHelpflagCommandExecutedWithoutVersionSet(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2793,
+    "kind": "func",
+    "name": "TestFind",
+    "signature": "func TestFind(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2882,
+    "kind": "func",
+    "name": "TestUnknownFlagShouldReturnSameErrorRegardlessOfArgPosition",
+    "signature": "func TestUnknownFlagShouldReturnSameErrorRegardlessOfArgPosition(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_test.go",
+    "line": 2925,
+    "kind": "func",
+    "name": "TestHelpFuncExecuted",
+    "signature": "func TestHelpFuncExecuted(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "command_win.go",
+    "line": 28,
+    "kind": "var",
+    "name": "preExecHookFn",
+    "signature": "var preExecHookFn = preExecHook",
+    "comment": ""
+  },
+  {
+    "file": "command_win.go",
+    "line": 30,
+    "kind": "func",
+    "name": "preExecHook",
+    "signature": "func preExecHook(c *Command) {",
+    "comment": ""
+  },
+  {
+    "file": "completions.go",
+    "line": 38,
+    "kind": "var",
+    "name": "flagCompletionFunctions",
+    "signature": "var flagCompletionFunctions = map[*pflag.Flag]CompletionFunc{}",
+    "comment": "Global map of flag completion functions. Make sure to use flagCompletionMutex before you try to read and write from it."
+  },
+  {
+    "file": "completions.go",
+    "line": 41,
+    "kind": "var",
+    "name": "flagCompletionMutex",
+    "signature": "var flagCompletionMutex = &sync.RWMutex{}",
+    "comment": "lock for reading and writing from flagCompletionFunctions"
+  },
+  {
+    "file": "completions.go",
+    "line": 45,
+    "kind": "type",
+    "name": "ShellCompDirective",
+    "signature": "type ShellCompDirective int",
+    "comment": "ShellCompDirective is a bit map representing the different behaviors the shell can be instructed to have once completions have been provided."
+  },
+  {
+    "file": "completions.go",
+    "line": 47,
+    "kind": "type",
+    "name": "flagCompError",
+    "signature": "type flagCompError struct {",
+    "comment": ""
+  },
+  {
+    "file": "completions.go",
+    "line": 52,
+    "kind": "method",
+    "name": "Error",
+    "signature": "func (e *flagCompError) Error() string {",
+    "comment": ""
+  },
+  {
+    "file": "completions.go",
+    "line": 107,
+    "kind": "type",
+    "name": "CompletionOptions",
+    "signature": "type CompletionOptions struct {",
+    "comment": "CompletionOptions are the options to control shell completion"
+  },
+  {
+    "file": "completions.go",
+    "line": 123,
+    "kind": "method",
+    "name": "SetDefaultShellCompDirective",
+    "signature": "func (receiver *CompletionOptions) SetDefaultShellCompDirective(directive ShellCompDirective) {",
+    "comment": ""
+  },
+  {
+    "file": "completions.go",
+    "line": 136,
+    "kind": "type",
+    "name": "Completion",
+    "signature": "type Completion = string",
+    "comment": "Completion is a string that can be used for completions "
+  },
+  {
+    "file": "completions.go",
+    "line": 139,
+    "kind": "type",
+    "name": "CompletionFunc",
+    "signature": "type CompletionFunc = func(cmd *Command, args []string, toComplete string) ([]Completion, ShellCompDirective)",
+    "comment": "CompletionFunc is a function that provides completion results."
+  },
+  {
+    "file": "completions.go",
+    "line": 142,
+    "kind": "func",
+    "name": "CompletionWithDesc",
+    "signature": "func CompletionWithDesc(choice string, description string) Completion {",
+    "comment": "CompletionWithDesc returns a [Completion] with a description by using the TAB delimited format."
+  },
+  {
+    "file": "completions.go",
+    "line": 151,
+    "kind": "func",
+    "name": "NoFileCompletions",
+    "signature": "func NoFileCompletions(cmd *Command, args []string, toComplete string) ([]Completion, ShellCompDirective) {",
+    "comment": "NoFileCompletions can be used to disable file completion for commands that should not trigger file completions."
+  },
+  {
+    "file": "completions.go",
+    "line": 160,
+    "kind": "func",
+    "name": "FixedCompletions",
+    "signature": "func FixedCompletions(choices []Completion, directive ShellCompDirective) CompletionFunc {",
+    "comment": "FixedCompletions can be used to create a completion function which always returns the same results."
+  },
+  {
+    "file": "completions.go",
+    "line": 170,
+    "kind": "method",
+    "name": "RegisterFlagCompletionFunc",
+    "signature": "func (c *Command) RegisterFlagCompletionFunc(flagName string, f CompletionFunc) error {",
+    "comment": "RegisterFlagCompletionFunc should be called to register a function to provide completion for a flag. "
+  },
+  {
+    "file": "completions.go",
+    "line": 186,
+    "kind": "method",
+    "name": "GetFlagCompletionFunc",
+    "signature": "func (c *Command) GetFlagCompletionFunc(flagName string) (CompletionFunc, bool) {",
+    "comment": "GetFlagCompletionFunc returns the completion function for the given flag of the command, if available."
+  },
+  {
+    "file": "completions.go",
+    "line": 200,
+    "kind": "method",
+    "name": "string",
+    "signature": "func (d ShellCompDirective) string() string {",
+    "comment": "Returns a string listing the different directive enabled in the specified parameter"
+  },
+  {
+    "file": "completions.go",
+    "line": 231,
+    "kind": "method",
+    "name": "initCompleteCmd",
+    "signature": "func (c *Command) initCompleteCmd(args []string) {",
+    "comment": "initCompleteCmd adds a special hidden command that can be used to request custom completions."
+  },
+  {
+    "file": "completions.go",
+    "line": 311,
+    "kind": "type",
+    "name": "SliceValue",
+    "signature": "type SliceValue interface {",
+    "comment": "SliceValue is a reduced version of [pflag.SliceValue]. It is used to detect flags that accept multiple values and therefore can provide completion"
+  },
+  {
+    "file": "completions.go",
+    "line": 316,
+    "kind": "method",
+    "name": "getCompletions",
+    "signature": "func (c *Command) getCompletions(args []string) (*Command, []Completion, ShellCompDirective, error) {",
+    "comment": ""
+  },
+  {
+    "file": "completions.go",
+    "line": 587,
+    "kind": "func",
+    "name": "helpOrVersionFlagPresent",
+    "signature": "func helpOrVersionFlagPresent(cmd *Command) bool {",
+    "comment": ""
+  },
+  {
+    "file": "completions.go",
+    "line": 599,
+    "kind": "func",
+    "name": "getFlagNameCompletions",
+    "signature": "func getFlagNameCompletions(flag *pflag.Flag, toComplete string) []Completion {",
+    "comment": ""
+  },
+  {
+    "file": "completions.go",
+    "line": 632,
+    "kind": "func",
+    "name": "completeRequireFlags",
+    "signature": "func completeRequireFlags(finalCmd *Command, toComplete string) []Completion {",
+    "comment": ""
+  },
+  {
+    "file": "completions.go",
+    "line": 657,
+    "kind": "func",
+    "name": "checkIfFlagCompletion",
+    "signature": "func checkIfFlagCompletion(finalCmd *Command, args []string, lastArg string) (*pflag.Flag, []string, string, error) {",
+    "comment": ""
+  },
+  {
+    "file": "completions.go",
+    "line": 748,
+    "kind": "method",
+    "name": "InitDefaultCompletionCmd",
+    "signature": "func (c *Command) InitDefaultCompletionCmd(args ...string) {",
+    "comment": "InitDefaultCompletionCmd adds a default 'completion' command to c. This function will do nothing if any of the following is true:"
+  },
+  {
+    "file": "completions.go",
+    "line": 932,
+    "kind": "func",
+    "name": "findFlag",
+    "signature": "func findFlag(cmd *Command, name string) *pflag.Flag {",
+    "comment": ""
+  },
+  {
+    "file": "completions.go",
+    "line": 955,
+    "kind": "func",
+    "name": "CompDebug",
+    "signature": "func CompDebug(msg string, printToStdErr bool) {",
+    "comment": "CompDebug prints the specified string to the same file as where the completion script prints its logs."
+  },
+  {
+    "file": "completions.go",
+    "line": 980,
+    "kind": "func",
+    "name": "CompDebugln",
+    "signature": "func CompDebugln(msg string, printToStdErr bool) {",
+    "comment": "CompDebugln prints the specified string with a newline at the end to the same file as where the completion script prints its logs."
+  },
+  {
+    "file": "completions.go",
+    "line": 985,
+    "kind": "func",
+    "name": "CompError",
+    "signature": "func CompError(msg string) {",
+    "comment": "CompError prints the specified completion message to stderr."
+  },
+  {
+    "file": "completions.go",
+    "line": 991,
+    "kind": "func",
+    "name": "CompErrorln",
+    "signature": "func CompErrorln(msg string) {",
+    "comment": "CompErrorln prints the specified completion message to stderr with a newline at the end."
+  },
+  {
+    "file": "completions.go",
+    "line": 1001,
+    "kind": "var",
+    "name": "configEnvVarPrefixSubstRegexp",
+    "signature": "var configEnvVarPrefixSubstRegexp = regexp.MustCompile(`[^A-Z0-9_]`)",
+    "comment": ""
+  },
+  {
+    "file": "completions.go",
+    "line": 1006,
+    "kind": "func",
+    "name": "configEnvVar",
+    "signature": "func configEnvVar(name, suffix string) string {",
+    "comment": "configEnvVar returns the name of the program-specific configuration environment variable.  It has the format <PROGRAM>_<SUFFIX> where <PROGRAM> is the name of the"
+  },
+  {
+    "file": "completions.go",
+    "line": 1018,
+    "kind": "func",
+    "name": "getEnvConfig",
+    "signature": "func getEnvConfig(cmd *Command, suffix string) string {",
+    "comment": "getEnvConfig returns the value of the configuration environment variable <PROGRAM>_<SUFFIX> where <PROGRAM> is the name of the root command in upper"
+  },
+  {
+    "file": "completions_test.go",
+    "line": 27,
+    "kind": "func",
+    "name": "validArgsFunc",
+    "signature": "func validArgsFunc(cmd *Command, args []string, toComplete string) ([]string, ShellCompDirective) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 41,
+    "kind": "func",
+    "name": "validArgsFunc2",
+    "signature": "func validArgsFunc2(cmd *Command, args []string, toComplete string) ([]string, ShellCompDirective) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 55,
+    "kind": "func",
+    "name": "TestCmdNameCompletionInGo",
+    "signature": "func TestCmdNameCompletionInGo(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 157,
+    "kind": "func",
+    "name": "TestNoCmdNameCompletionInGo",
+    "signature": "func TestNoCmdNameCompletionInGo(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 322,
+    "kind": "func",
+    "name": "TestValidArgsCompletionInGo",
+    "signature": "func TestValidArgsCompletionInGo(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 376,
+    "kind": "func",
+    "name": "TestValidArgsAndCmdCompletionInGo",
+    "signature": "func TestValidArgsAndCmdCompletionInGo(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 426,
+    "kind": "func",
+    "name": "TestValidArgsFuncAndCmdCompletionInGo",
+    "signature": "func TestValidArgsFuncAndCmdCompletionInGo(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 493,
+    "kind": "func",
+    "name": "TestFlagNameCompletionInGo",
+    "signature": "func TestFlagNameCompletionInGo(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 583,
+    "kind": "func",
+    "name": "TestFlagNameCompletionInGoWithDesc",
+    "signature": "func TestFlagNameCompletionInGoWithDesc(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 676,
+    "kind": "type",
+    "name": "customMultiString",
+    "signature": "type customMultiString []string",
+    "comment": "customMultiString is a custom Value type that accepts multiple values, but does not include \"Slice\" or \"Array\" in its \"Type\" string."
+  },
+  {
+    "file": "completions_test.go",
+    "line": 678,
+    "kind": "var",
+    "name": "_",
+    "signature": "var _ SliceValue = (*customMultiString)(nil)",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 680,
+    "kind": "method",
+    "name": "String",
+    "signature": "func (s *customMultiString) String() string {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 684,
+    "kind": "method",
+    "name": "Set",
+    "signature": "func (s *customMultiString) Set(v string) error {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 689,
+    "kind": "method",
+    "name": "Type",
+    "signature": "func (s *customMultiString) Type() string {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 693,
+    "kind": "method",
+    "name": "GetSlice",
+    "signature": "func (s *customMultiString) GetSlice() []string {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 697,
+    "kind": "func",
+    "name": "TestFlagNameCompletionRepeat",
+    "signature": "func TestFlagNameCompletionRepeat(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 844,
+    "kind": "func",
+    "name": "TestRequiredFlagNameCompletionInGo",
+    "signature": "func TestRequiredFlagNameCompletionInGo(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 1038,
+    "kind": "func",
+    "name": "TestFlagFileExtFilterCompletionInGo",
+    "signature": "func TestFlagFileExtFilterCompletionInGo(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 1160,
+    "kind": "func",
+    "name": "TestFlagDirFilterCompletionInGo",
+    "signature": "func TestFlagDirFilterCompletionInGo(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 1276,
+    "kind": "func",
+    "name": "TestValidArgsFuncCmdContext",
+    "signature": "func TestValidArgsFuncCmdContext(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 1318,
+    "kind": "func",
+    "name": "TestValidArgsFuncSingleCmd",
+    "signature": "func TestValidArgsFuncSingleCmd(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 1357,
+    "kind": "func",
+    "name": "TestValidArgsFuncSingleCmdInvalidArg",
+    "signature": "func TestValidArgsFuncSingleCmdInvalidArg(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 1384,
+    "kind": "func",
+    "name": "TestValidArgsFuncChildCmds",
+    "signature": "func TestValidArgsFuncChildCmds(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 1488,
+    "kind": "func",
+    "name": "TestValidArgsFuncAliases",
+    "signature": "func TestValidArgsFuncAliases(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 1544,
+    "kind": "func",
+    "name": "TestValidArgsFuncInBashScript",
+    "signature": "func TestValidArgsFuncInBashScript(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 1560,
+    "kind": "func",
+    "name": "TestNoValidArgsFuncInBashScript",
+    "signature": "func TestNoValidArgsFuncInBashScript(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 1575,
+    "kind": "func",
+    "name": "TestCompleteCmdInBashScript",
+    "signature": "func TestCompleteCmdInBashScript(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 1591,
+    "kind": "func",
+    "name": "TestCompleteNoDesCmdInZshScript",
+    "signature": "func TestCompleteNoDesCmdInZshScript(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 1607,
+    "kind": "func",
+    "name": "TestCompleteCmdInZshScript",
+    "signature": "func TestCompleteCmdInZshScript(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 1624,
+    "kind": "func",
+    "name": "TestFlagCompletionInGo",
+    "signature": "func TestFlagCompletionInGo(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 1717,
+    "kind": "func",
+    "name": "TestValidArgsFuncChildCmdsWithDesc",
+    "signature": "func TestValidArgsFuncChildCmdsWithDesc(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 1821,
+    "kind": "func",
+    "name": "TestFlagCompletionWithNotInterspersedArgs",
+    "signature": "func TestFlagCompletionWithNotInterspersedArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 2044,
+    "kind": "func",
+    "name": "TestFlagCompletionWorksRootCommandAddedAfterFlags",
+    "signature": "func TestFlagCompletionWorksRootCommandAddedAfterFlags(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 2079,
+    "kind": "func",
+    "name": "TestFlagCompletionForPersistentFlagsCalledFromSubCmd",
+    "signature": "func TestFlagCompletionForPersistentFlagsCalledFromSubCmd(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 2121,
+    "kind": "func",
+    "name": "TestFlagCompletionConcurrentRegistration",
+    "signature": "func TestFlagCompletionConcurrentRegistration(t *testing.T) {",
+    "comment": "This test tries to register flag completion concurrently to make sure the code handles concurrency properly."
+  },
+  {
+    "file": "completions_test.go",
+    "line": 2187,
+    "kind": "func",
+    "name": "TestFlagCompletionInGoWithDesc",
+    "signature": "func TestFlagCompletionInGoWithDesc(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 2280,
+    "kind": "func",
+    "name": "TestValidArgsNotValidArgsFunc",
+    "signature": "func TestValidArgsNotValidArgsFunc(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 2323,
+    "kind": "func",
+    "name": "TestArgAliasesCompletionInGo",
+    "signature": "func TestArgAliasesCompletionInGo(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 2381,
+    "kind": "func",
+    "name": "TestCompleteHelp",
+    "signature": "func TestCompleteHelp(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 2451,
+    "kind": "func",
+    "name": "removeCompCmd",
+    "signature": "func removeCompCmd(rootCmd *Command) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 2461,
+    "kind": "func",
+    "name": "TestDefaultCompletionCmd",
+    "signature": "func TestDefaultCompletionCmd(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 2607,
+    "kind": "func",
+    "name": "TestCompleteCompletion",
+    "signature": "func TestCompleteCompletion(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 2694,
+    "kind": "func",
+    "name": "TestMultipleShorthandFlagCompletion",
+    "signature": "func TestMultipleShorthandFlagCompletion(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 2787,
+    "kind": "func",
+    "name": "TestCompleteWithDisableFlagParsing",
+    "signature": "func TestCompleteWithDisableFlagParsing(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 2850,
+    "kind": "func",
+    "name": "TestCompleteWithRootAndLegacyArgs",
+    "signature": "func TestCompleteWithRootAndLegacyArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 2896,
+    "kind": "func",
+    "name": "TestCompletionFuncCompatibility",
+    "signature": "func TestCompletionFuncCompatibility(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 2980,
+    "kind": "func",
+    "name": "TestFixedCompletions",
+    "signature": "func TestFixedCompletions(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 3007,
+    "kind": "func",
+    "name": "TestFixedCompletionsWithCompletionHelpers",
+    "signature": "func TestFixedCompletionsWithCompletionHelpers(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 3057,
+    "kind": "func",
+    "name": "TestCompletionForGroupedFlags",
+    "signature": "func TestCompletionForGroupedFlags(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 3157,
+    "kind": "func",
+    "name": "TestCompletionForOneRequiredGroupFlags",
+    "signature": "func TestCompletionForOneRequiredGroupFlags(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 3255,
+    "kind": "func",
+    "name": "TestCompletionForMutuallyExclusiveFlags",
+    "signature": "func TestCompletionForMutuallyExclusiveFlags(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 3349,
+    "kind": "func",
+    "name": "TestCompletionCobraFlags",
+    "signature": "func TestCompletionCobraFlags(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 3583,
+    "kind": "func",
+    "name": "TestArgsNotDetectedAsFlagsCompletionInGo",
+    "signature": "func TestArgsNotDetectedAsFlagsCompletionInGo(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 3647,
+    "kind": "func",
+    "name": "TestGetFlagCompletion",
+    "signature": "func TestGetFlagCompletion(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 3737,
+    "kind": "func",
+    "name": "TestGetEnvConfig",
+    "signature": "func TestGetEnvConfig(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 3822,
+    "kind": "func",
+    "name": "TestDisableDescriptions",
+    "signature": "func TestDisableDescriptions(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 3930,
+    "kind": "func",
+    "name": "TestInitDefaultCompletionCmd",
+    "signature": "func TestInitDefaultCompletionCmd(t *testing.T) {",
+    "comment": "A test to make sure the InitDefaultCompletionCmd function works as expected in case a project calls it directly."
+  },
+  {
+    "file": "completions_test.go",
+    "line": 4019,
+    "kind": "func",
+    "name": "TestCustomDefaultShellCompDirective",
+    "signature": "func TestCustomDefaultShellCompDirective(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "completions_test.go",
+    "line": 4076,
+    "kind": "func",
+    "name": "TestCompletionDoesNotMutateOsArgs",
+    "signature": "func TestCompletionDoesNotMutateOsArgs(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/cmd_test.go",
+    "line": 24,
+    "kind": "func",
+    "name": "emptyRun",
+    "signature": "func emptyRun(*cobra.Command, []string) {}",
+    "comment": ""
+  },
+  {
+    "file": "doc/cmd_test.go",
+    "line": 26,
+    "kind": "func",
+    "name": "init",
+    "signature": "func init() {",
+    "comment": ""
+  },
+  {
+    "file": "doc/cmd_test.go",
+    "line": 47,
+    "kind": "var",
+    "name": "rootCmd",
+    "signature": "var rootCmd = &cobra.Command{",
+    "comment": ""
+  },
+  {
+    "file": "doc/cmd_test.go",
+    "line": 54,
+    "kind": "var",
+    "name": "echoCmd",
+    "signature": "var echoCmd = &cobra.Command{",
+    "comment": ""
+  },
+  {
+    "file": "doc/cmd_test.go",
+    "line": 62,
+    "kind": "var",
+    "name": "echoSubCmd",
+    "signature": "var echoSubCmd = &cobra.Command{",
+    "comment": ""
+  },
+  {
+    "file": "doc/cmd_test.go",
+    "line": 69,
+    "kind": "var",
+    "name": "timesCmd",
+    "signature": "var timesCmd = &cobra.Command{",
+    "comment": ""
+  },
+  {
+    "file": "doc/cmd_test.go",
+    "line": 77,
+    "kind": "var",
+    "name": "deprecatedCmd",
+    "signature": "var deprecatedCmd = &cobra.Command{",
+    "comment": ""
+  },
+  {
+    "file": "doc/cmd_test.go",
+    "line": 84,
+    "kind": "var",
+    "name": "printCmd",
+    "signature": "var printCmd = &cobra.Command{",
+    "comment": ""
+  },
+  {
+    "file": "doc/cmd_test.go",
+    "line": 90,
+    "kind": "var",
+    "name": "dummyCmd",
+    "signature": "var dummyCmd = &cobra.Command{",
+    "comment": ""
+  },
+  {
+    "file": "doc/cmd_test.go",
+    "line": 95,
+    "kind": "func",
+    "name": "checkStringContains",
+    "signature": "func checkStringContains(t *testing.T, got, expected string) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/cmd_test.go",
+    "line": 101,
+    "kind": "func",
+    "name": "checkStringOmits",
+    "signature": "func checkStringOmits(t *testing.T, got, expected string) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs.go",
+    "line": 38,
+    "kind": "func",
+    "name": "GenManTree",
+    "signature": "func GenManTree(cmd *cobra.Command, header *GenManHeader, dir string) error {",
+    "comment": "GenManTree will generate a man page for this command and all descendants in the directory given. The header may be nil. This function may not work"
+  },
+  {
+    "file": "doc/man_docs.go",
+    "line": 48,
+    "kind": "func",
+    "name": "GenManTreeFromOpts",
+    "signature": "func GenManTreeFromOpts(cmd *cobra.Command, opts GenManTreeOptions) error {",
+    "comment": "GenManTreeFromOpts generates a man page for the command and all descendants. The pages are written to the opts.Path directory."
+  },
+  {
+    "file": "doc/man_docs.go",
+    "line": 84,
+    "kind": "type",
+    "name": "GenManTreeOptions",
+    "signature": "type GenManTreeOptions struct {",
+    "comment": "GenManTreeOptions is the options for generating the man pages. Used only in GenManTreeFromOpts."
+  },
+  {
+    "file": "doc/man_docs.go",
+    "line": 94,
+    "kind": "type",
+    "name": "GenManHeader",
+    "signature": "type GenManHeader struct {",
+    "comment": "GenManHeader is a lot like the .TH header at the start of man pages. These include the title, section, date, source, and manual. We will use the"
+  },
+  {
+    "file": "doc/man_docs.go",
+    "line": 105,
+    "kind": "func",
+    "name": "GenMan",
+    "signature": "func GenMan(cmd *cobra.Command, header *GenManHeader, w io.Writer) error {",
+    "comment": "GenMan will generate a man page for the given command and write it to w. The header argument may be nil, however obviously w may not."
+  },
+  {
+    "file": "doc/man_docs.go",
+    "line": 118,
+    "kind": "func",
+    "name": "fillHeader",
+    "signature": "func fillHeader(header *GenManHeader, name string, disableAutoGen bool) error {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs.go",
+    "line": 143,
+    "kind": "func",
+    "name": "manPreamble",
+    "signature": "func manPreamble(buf io.StringWriter, header *GenManHeader, cmd *cobra.Command, dashedName string) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs.go",
+    "line": 159,
+    "kind": "func",
+    "name": "manPrintFlags",
+    "signature": "func manPrintFlags(buf io.StringWriter, flags *pflag.FlagSet) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs.go",
+    "line": 187,
+    "kind": "func",
+    "name": "manPrintOptions",
+    "signature": "func manPrintOptions(buf io.StringWriter, command *cobra.Command) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs.go",
+    "line": 202,
+    "kind": "func",
+    "name": "genMan",
+    "signature": "func genMan(cmd *cobra.Command, header *GenManHeader) []byte {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs_test.go",
+    "line": 29,
+    "kind": "func",
+    "name": "assertNoErr",
+    "signature": "func assertNoErr(t *testing.T, e error) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs_test.go",
+    "line": 35,
+    "kind": "func",
+    "name": "translate",
+    "signature": "func translate(in string) string {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs_test.go",
+    "line": 39,
+    "kind": "func",
+    "name": "TestGenManDoc",
+    "signature": "func TestGenManDoc(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs_test.go",
+    "line": 69,
+    "kind": "func",
+    "name": "TestGenManNoHiddenParents",
+    "signature": "func TestGenManNoHiddenParents(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs_test.go",
+    "line": 105,
+    "kind": "func",
+    "name": "TestGenManNoGenTag",
+    "signature": "func TestGenManNoGenTag(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs_test.go",
+    "line": 127,
+    "kind": "func",
+    "name": "TestGenManSeeAlso",
+    "signature": "func TestGenManSeeAlso(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs_test.go",
+    "line": 149,
+    "kind": "func",
+    "name": "TestManPrintFlagsHidesShortDeprecated",
+    "signature": "func TestManPrintFlagsHidesShortDeprecated(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs_test.go",
+    "line": 164,
+    "kind": "func",
+    "name": "TestGenManTree",
+    "signature": "func TestGenManTree(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs_test.go",
+    "line": 186,
+    "kind": "func",
+    "name": "assertLineFound",
+    "signature": "func assertLineFound(scanner *bufio.Scanner, expectedLine string) error {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs_test.go",
+    "line": 201,
+    "kind": "func",
+    "name": "assertNextLineEquals",
+    "signature": "func assertNextLineEquals(scanner *bufio.Scanner, expectedLine string) error {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_docs_test.go",
+    "line": 217,
+    "kind": "func",
+    "name": "BenchmarkGenManToFile",
+    "signature": "func BenchmarkGenManToFile(b *testing.B) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_examples_test.go",
+    "line": 25,
+    "kind": "func",
+    "name": "ExampleGenManTree",
+    "signature": "func ExampleGenManTree() {",
+    "comment": ""
+  },
+  {
+    "file": "doc/man_examples_test.go",
+    "line": 37,
+    "kind": "func",
+    "name": "ExampleGenMan",
+    "signature": "func ExampleGenMan() {",
+    "comment": ""
+  },
+  {
+    "file": "doc/md_docs.go",
+    "line": 30,
+    "kind": "const",
+    "name": "markdownExtension",
+    "signature": "const markdownExtension = \".md\"",
+    "comment": ""
+  },
+  {
+    "file": "doc/md_docs.go",
+    "line": 32,
+    "kind": "func",
+    "name": "printOptions",
+    "signature": "func printOptions(buf *bytes.Buffer, cmd *cobra.Command, name string) error {",
+    "comment": ""
+  },
+  {
+    "file": "doc/md_docs.go",
+    "line": 52,
+    "kind": "func",
+    "name": "GenMarkdown",
+    "signature": "func GenMarkdown(cmd *cobra.Command, w io.Writer) error {",
+    "comment": "GenMarkdown creates markdown output."
+  },
+  {
+    "file": "doc/md_docs.go",
+    "line": 57,
+    "kind": "func",
+    "name": "GenMarkdownCustom",
+    "signature": "func GenMarkdownCustom(cmd *cobra.Command, w io.Writer, linkHandler func(string) string) error {",
+    "comment": "GenMarkdownCustom creates custom markdown output."
+  },
+  {
+    "file": "doc/md_docs.go",
+    "line": 125,
+    "kind": "func",
+    "name": "GenMarkdownTree",
+    "signature": "func GenMarkdownTree(cmd *cobra.Command, dir string) error {",
+    "comment": "GenMarkdownTree will generate a markdown page for this command and all descendants in the directory given. The header may be nil."
+  },
+  {
+    "file": "doc/md_docs.go",
+    "line": 133,
+    "kind": "func",
+    "name": "GenMarkdownTreeCustom",
+    "signature": "func GenMarkdownTreeCustom(cmd *cobra.Command, dir string, filePrepender, linkHandler func(string) string) error {",
+    "comment": "GenMarkdownTreeCustom is the same as GenMarkdownTree, but with custom filePrepender and linkHandler."
+  },
+  {
+    "file": "doc/md_docs_test.go",
+    "line": 26,
+    "kind": "func",
+    "name": "TestGenMdDoc",
+    "signature": "func TestGenMdDoc(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/md_docs_test.go",
+    "line": 44,
+    "kind": "func",
+    "name": "TestGenMdDocWithNoLongOrSynopsis",
+    "signature": "func TestGenMdDocWithNoLongOrSynopsis(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/md_docs_test.go",
+    "line": 58,
+    "kind": "func",
+    "name": "TestGenMdNoHiddenParents",
+    "signature": "func TestGenMdNoHiddenParents(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/md_docs_test.go",
+    "line": 81,
+    "kind": "func",
+    "name": "TestGenMdNoTag",
+    "signature": "func TestGenMdNoTag(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/md_docs_test.go",
+    "line": 94,
+    "kind": "func",
+    "name": "TestGenMdTree",
+    "signature": "func TestGenMdTree(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/md_docs_test.go",
+    "line": 111,
+    "kind": "func",
+    "name": "BenchmarkGenMarkdownToFile",
+    "signature": "func BenchmarkGenMarkdownToFile(b *testing.B) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/rest_docs.go",
+    "line": 30,
+    "kind": "func",
+    "name": "printOptionsReST",
+    "signature": "func printOptionsReST(buf *bytes.Buffer, cmd *cobra.Command, name string) error {",
+    "comment": ""
+  },
+  {
+    "file": "doc/rest_docs.go",
+    "line": 52,
+    "kind": "func",
+    "name": "defaultLinkHandler",
+    "signature": "func defaultLinkHandler(name, ref string) string {",
+    "comment": "defaultLinkHandler for default ReST hyperlink markup"
+  },
+  {
+    "file": "doc/rest_docs.go",
+    "line": 57,
+    "kind": "func",
+    "name": "GenReST",
+    "signature": "func GenReST(cmd *cobra.Command, w io.Writer) error {",
+    "comment": "GenReST creates reStructured Text output."
+  },
+  {
+    "file": "doc/rest_docs.go",
+    "line": 62,
+    "kind": "func",
+    "name": "GenReSTCustom",
+    "signature": "func GenReSTCustom(cmd *cobra.Command, w io.Writer, linkHandler func(string, string) string) error {",
+    "comment": "GenReSTCustom creates custom reStructured Text output."
+  },
+  {
+    "file": "doc/rest_docs.go",
+    "line": 138,
+    "kind": "func",
+    "name": "GenReSTTree",
+    "signature": "func GenReSTTree(cmd *cobra.Command, dir string) error {",
+    "comment": "GenReSTTree will generate a ReST page for this command and all descendants in the directory given."
+  },
+  {
+    "file": "doc/rest_docs.go",
+    "line": 145,
+    "kind": "func",
+    "name": "GenReSTTreeCustom",
+    "signature": "func GenReSTTreeCustom(cmd *cobra.Command, dir string, filePrepender func(string) string, linkHandler func(string, strin ...",
+    "comment": "GenReSTTreeCustom is the same as GenReSTTree, but with custom filePrepender and linkHandler."
+  },
+  {
+    "file": "doc/rest_docs.go",
+    "line": 173,
+    "kind": "func",
+    "name": "indentString",
+    "signature": "func indentString(s, p string) string {",
+    "comment": "indentString adapted from: https://github.com/kr/text/blob/main/indent.go"
+  },
+  {
+    "file": "doc/rest_docs_test.go",
+    "line": 26,
+    "kind": "func",
+    "name": "TestGenRSTDoc",
+    "signature": "func TestGenRSTDoc(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/rest_docs_test.go",
+    "line": 43,
+    "kind": "func",
+    "name": "TestGenRSTNoHiddenParents",
+    "signature": "func TestGenRSTNoHiddenParents(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/rest_docs_test.go",
+    "line": 66,
+    "kind": "func",
+    "name": "TestGenRSTNoTag",
+    "signature": "func TestGenRSTNoTag(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/rest_docs_test.go",
+    "line": 80,
+    "kind": "func",
+    "name": "TestGenRSTTree",
+    "signature": "func TestGenRSTTree(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/rest_docs_test.go",
+    "line": 98,
+    "kind": "func",
+    "name": "BenchmarkGenReSTToFile",
+    "signature": "func BenchmarkGenReSTToFile(b *testing.B) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/util.go",
+    "line": 26,
+    "kind": "func",
+    "name": "hasSeeAlso",
+    "signature": "func hasSeeAlso(cmd *cobra.Command) bool {",
+    "comment": "Test to see if we have a reason to print See Also information in docs Basically this is a test for a parent command or a subcommand which is"
+  },
+  {
+    "file": "doc/util.go",
+    "line": 41,
+    "kind": "func",
+    "name": "forceMultiLine",
+    "signature": "func forceMultiLine(s string) string {",
+    "comment": "Temporary workaround for yaml lib generating incorrect yaml with long strings that do not contain \\n."
+  },
+  {
+    "file": "doc/util.go",
+    "line": 48,
+    "kind": "type",
+    "name": "byName",
+    "signature": "type byName []*cobra.Command",
+    "comment": ""
+  },
+  {
+    "file": "doc/util.go",
+    "line": 50,
+    "kind": "method",
+    "name": "Len",
+    "signature": "func (s byName) Len() int           { return len(s) }",
+    "comment": ""
+  },
+  {
+    "file": "doc/util.go",
+    "line": 51,
+    "kind": "method",
+    "name": "Swap",
+    "signature": "func (s byName) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }",
+    "comment": ""
+  },
+  {
+    "file": "doc/util.go",
+    "line": 52,
+    "kind": "method",
+    "name": "Less",
+    "signature": "func (s byName) Less(i, j int) bool { return s[i].Name() < s[j].Name() }",
+    "comment": ""
+  },
+  {
+    "file": "doc/yaml_docs.go",
+    "line": 30,
+    "kind": "type",
+    "name": "cmdOption",
+    "signature": "type cmdOption struct {",
+    "comment": ""
+  },
+  {
+    "file": "doc/yaml_docs.go",
+    "line": 37,
+    "kind": "type",
+    "name": "cmdDoc",
+    "signature": "type cmdDoc struct {",
+    "comment": ""
+  },
+  {
+    "file": "doc/yaml_docs.go",
+    "line": 53,
+    "kind": "func",
+    "name": "GenYamlTree",
+    "signature": "func GenYamlTree(cmd *cobra.Command, dir string) error {",
+    "comment": "GenYamlTree creates yaml structured ref files for this command and all descendants in the directory given. This function may not work"
+  },
+  {
+    "file": "doc/yaml_docs.go",
+    "line": 60,
+    "kind": "func",
+    "name": "GenYamlTreeCustom",
+    "signature": "func GenYamlTreeCustom(cmd *cobra.Command, dir string, filePrepender, linkHandler func(string) string) error {",
+    "comment": "GenYamlTreeCustom creates yaml structured ref files."
+  },
+  {
+    "file": "doc/yaml_docs.go",
+    "line": 88,
+    "kind": "func",
+    "name": "GenYaml",
+    "signature": "func GenYaml(cmd *cobra.Command, w io.Writer) error {",
+    "comment": "GenYaml creates yaml output."
+  },
+  {
+    "file": "doc/yaml_docs.go",
+    "line": 93,
+    "kind": "func",
+    "name": "GenYamlCustom",
+    "signature": "func GenYamlCustom(cmd *cobra.Command, w io.Writer, linkHandler func(string) string) error {",
+    "comment": "GenYamlCustom creates custom yaml output."
+  },
+  {
+    "file": "doc/yaml_docs.go",
+    "line": 149,
+    "kind": "func",
+    "name": "genFlagResult",
+    "signature": "func genFlagResult(flags *pflag.FlagSet) []cmdOption {",
+    "comment": ""
+  },
+  {
+    "file": "doc/yaml_docs_test.go",
+    "line": 27,
+    "kind": "func",
+    "name": "TestGenYamlDoc",
+    "signature": "func TestGenYamlDoc(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/yaml_docs_test.go",
+    "line": 44,
+    "kind": "func",
+    "name": "TestGenYamlNoTag",
+    "signature": "func TestGenYamlNoTag(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/yaml_docs_test.go",
+    "line": 57,
+    "kind": "func",
+    "name": "TestGenYamlTree",
+    "signature": "func TestGenYamlTree(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/yaml_docs_test.go",
+    "line": 75,
+    "kind": "func",
+    "name": "TestGenYamlDocRunnable",
+    "signature": "func TestGenYamlDocRunnable(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "doc/yaml_docs_test.go",
+    "line": 86,
+    "kind": "func",
+    "name": "BenchmarkGenYamlToFile",
+    "signature": "func BenchmarkGenYamlToFile(b *testing.B) {",
+    "comment": ""
+  },
+  {
+    "file": "fish_completions.go",
+    "line": 25,
+    "kind": "func",
+    "name": "genFishComp",
+    "signature": "func genFishComp(buf io.StringWriter, name string, includeDesc bool) {",
+    "comment": ""
+  },
+  {
+    "file": "fish_completions.go",
+    "line": 276,
+    "kind": "method",
+    "name": "GenFishCompletion",
+    "signature": "func (c *Command) GenFishCompletion(w io.Writer, includeDesc bool) error {",
+    "comment": "GenFishCompletion generates fish completion file and writes to the passed writer."
+  },
+  {
+    "file": "fish_completions.go",
+    "line": 284,
+    "kind": "method",
+    "name": "GenFishCompletionFile",
+    "signature": "func (c *Command) GenFishCompletionFile(filename string, includeDesc bool) error {",
+    "comment": "GenFishCompletionFile generates fish completion file."
+  },
+  {
+    "file": "fish_completions_test.go",
+    "line": 26,
+    "kind": "func",
+    "name": "TestCompleteNoDesCmdInFishScript",
+    "signature": "func TestCompleteNoDesCmdInFishScript(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "fish_completions_test.go",
+    "line": 42,
+    "kind": "func",
+    "name": "TestCompleteCmdInFishScript",
+    "signature": "func TestCompleteCmdInFishScript(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "fish_completions_test.go",
+    "line": 59,
+    "kind": "func",
+    "name": "TestProgWithDash",
+    "signature": "func TestProgWithDash(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "fish_completions_test.go",
+    "line": 74,
+    "kind": "func",
+    "name": "TestProgWithColon",
+    "signature": "func TestProgWithColon(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "fish_completions_test.go",
+    "line": 89,
+    "kind": "func",
+    "name": "TestFishCompletionNoActiveHelp",
+    "signature": "func TestFishCompletionNoActiveHelp(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "fish_completions_test.go",
+    "line": 101,
+    "kind": "func",
+    "name": "TestGenFishCompletionFile",
+    "signature": "func TestGenFishCompletionFile(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "fish_completions_test.go",
+    "line": 120,
+    "kind": "func",
+    "name": "TestFailGenFishCompletionFile",
+    "signature": "func TestFailGenFishCompletionFile(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "flag_groups.go",
+    "line": 33,
+    "kind": "method",
+    "name": "MarkFlagsRequiredTogether",
+    "signature": "func (c *Command) MarkFlagsRequiredTogether(flagNames ...string) {",
+    "comment": "MarkFlagsRequiredTogether marks the given flags with annotations so that Cobra errors if the command is invoked with a subset (but not all) of the given flags."
+  },
+  {
+    "file": "flag_groups.go",
+    "line": 49,
+    "kind": "method",
+    "name": "MarkFlagsOneRequired",
+    "signature": "func (c *Command) MarkFlagsOneRequired(flagNames ...string) {",
+    "comment": "MarkFlagsOneRequired marks the given flags with annotations so that Cobra errors if the command is invoked without at least one flag from the given set of flags."
+  },
+  {
+    "file": "flag_groups.go",
+    "line": 65,
+    "kind": "method",
+    "name": "MarkFlagsMutuallyExclusive",
+    "signature": "func (c *Command) MarkFlagsMutuallyExclusive(flagNames ...string) {",
+    "comment": "MarkFlagsMutuallyExclusive marks the given flags with annotations so that Cobra errors if the command is invoked with more than one flag from the given set of flags."
+  },
+  {
+    "file": "flag_groups.go",
+    "line": 81,
+    "kind": "method",
+    "name": "ValidateFlagGroups",
+    "signature": "func (c *Command) ValidateFlagGroups() error {",
+    "comment": "ValidateFlagGroups validates the mutuallyExclusive/oneRequired/requiredAsGroup logic and returns the first error encountered."
+  },
+  {
+    "file": "flag_groups.go",
+    "line": 111,
+    "kind": "func",
+    "name": "hasAllFlags",
+    "signature": "func hasAllFlags(fs *flag.FlagSet, flagnames ...string) bool {",
+    "comment": ""
+  },
+  {
+    "file": "flag_groups.go",
+    "line": 121,
+    "kind": "func",
+    "name": "processFlagForGroupAnnotation",
+    "signature": "func processFlagForGroupAnnotation(flags *flag.FlagSet, pflag *flag.Flag, annotation string, groupStatus map[string]map[ ...",
+    "comment": ""
+  },
+  {
+    "file": "flag_groups.go",
+    "line": 144,
+    "kind": "func",
+    "name": "validateRequiredFlagGroups",
+    "signature": "func validateRequiredFlagGroups(data map[string]map[string]bool) error {",
+    "comment": ""
+  },
+  {
+    "file": "flag_groups.go",
+    "line": 167,
+    "kind": "func",
+    "name": "validateOneRequiredFlagGroups",
+    "signature": "func validateOneRequiredFlagGroups(data map[string]map[string]bool) error {",
+    "comment": ""
+  },
+  {
+    "file": "flag_groups.go",
+    "line": 188,
+    "kind": "func",
+    "name": "validateExclusiveFlagGroups",
+    "signature": "func validateExclusiveFlagGroups(data map[string]map[string]bool) error {",
+    "comment": ""
+  },
+  {
+    "file": "flag_groups.go",
+    "line": 209,
+    "kind": "func",
+    "name": "sortedKeys",
+    "signature": "func sortedKeys(m map[string]map[string]bool) []string {",
+    "comment": ""
+  },
+  {
+    "file": "flag_groups.go",
+    "line": 225,
+    "kind": "method",
+    "name": "enforceFlagGroupsForCompletion",
+    "signature": "func (c *Command) enforceFlagGroupsForCompletion() {",
+    "comment": "enforceFlagGroupsForCompletion will do the following: - when a flag in a group is present, other flags in the group will be marked required"
+  },
+  {
+    "file": "flag_groups_test.go",
+    "line": 22,
+    "kind": "func",
+    "name": "TestValidateFlagGroups",
+    "signature": "func TestValidateFlagGroups(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "powershell_completions.go",
+    "line": 28,
+    "kind": "func",
+    "name": "genPowerShellComp",
+    "signature": "func genPowerShellComp(buf io.StringWriter, name string, includeDesc bool) {",
+    "comment": ""
+  },
+  {
+    "file": "powershell_completions.go",
+    "line": 313,
+    "kind": "method",
+    "name": "genPowerShellCompletion",
+    "signature": "func (c *Command) genPowerShellCompletion(w io.Writer, includeDesc bool) error {",
+    "comment": ""
+  },
+  {
+    "file": "powershell_completions.go",
+    "line": 320,
+    "kind": "method",
+    "name": "genPowerShellCompletionFile",
+    "signature": "func (c *Command) genPowerShellCompletionFile(filename string, includeDesc bool) error {",
+    "comment": ""
+  },
+  {
+    "file": "powershell_completions.go",
+    "line": 331,
+    "kind": "method",
+    "name": "GenPowerShellCompletionFile",
+    "signature": "func (c *Command) GenPowerShellCompletionFile(filename string) error {",
+    "comment": "GenPowerShellCompletionFile generates powershell completion file without descriptions."
+  },
+  {
+    "file": "powershell_completions.go",
+    "line": 337,
+    "kind": "method",
+    "name": "GenPowerShellCompletion",
+    "signature": "func (c *Command) GenPowerShellCompletion(w io.Writer) error {",
+    "comment": "GenPowerShellCompletion generates powershell completion file without descriptions and writes it to the passed writer."
+  },
+  {
+    "file": "powershell_completions.go",
+    "line": 342,
+    "kind": "method",
+    "name": "GenPowerShellCompletionFileWithDesc",
+    "signature": "func (c *Command) GenPowerShellCompletionFileWithDesc(filename string) error {",
+    "comment": "GenPowerShellCompletionFileWithDesc generates powershell completion file with descriptions."
+  },
+  {
+    "file": "powershell_completions.go",
+    "line": 348,
+    "kind": "method",
+    "name": "GenPowerShellCompletionWithDesc",
+    "signature": "func (c *Command) GenPowerShellCompletionWithDesc(w io.Writer) error {",
+    "comment": "GenPowerShellCompletionWithDesc generates powershell completion file with descriptions and writes it to the passed writer."
+  },
+  {
+    "file": "powershell_completions_test.go",
+    "line": 23,
+    "kind": "func",
+    "name": "TestPwshCompletionNoActiveHelp",
+    "signature": "func TestPwshCompletionNoActiveHelp(t *testing.T) {",
+    "comment": ""
+  },
+  {
+    "file": "shell_completions.go",
+    "line": 24,
+    "kind": "method",
+    "name": "MarkFlagRequired",
+    "signature": "func (c *Command) MarkFlagRequired(name string) error {",
+    "comment": "MarkFlagRequired instructs the various shell completion implementations to prioritize the named flag when performing completion,"
+  },
+  {
+    "file": "shell_completions.go",
+    "line": 31,
+    "kind": "method",
+    "name": "MarkPersistentFlagRequired",
+    "signature": "func (c *Command) MarkPersistentFlagRequired(name string) error {",
+    "comment": "MarkPersistentFlagRequired instructs the various shell completion implementations to prioritize the named persistent flag when performing completion,"
+  },
+  {
+    "file": "shell_completions.go",
+    "line": 38,
+    "kind": "func",
+    "name": "MarkFlagRequired",
+    "signature": "func MarkFlagRequired(flags *pflag.FlagSet, name string) error {",
+    "comment": "MarkFlagRequired instructs the various shell completion implementations to prioritize the named flag when performing completion,"
+  },
+  {
+    "file": "shell_completions.go",
+    "line": 44,
+    "kind": "method",
+    "name": "MarkFlagFilename",
+    "signature": "func (c *Command) MarkFlagFilename(name string, extensions ...string) error {",
+    "comment": "MarkFlagFilename instructs the various shell completion implementations to limit completions for the named flag to the specified file extensions."
+  },
+  {
+    "file": "shell_completions.go",
+    "line": 54,
+    "kind": "method",
+    "name": "MarkFlagCustom",
+    "signature": "func (c *Command) MarkFlagCustom(name string, f string) error {",
+    "comment": "MarkFlagCustom adds the BashCompCustom annotation to the named flag, if it exists. The bash completion script will call the bash function f for the flag."
+  },
+  {
+    "file": "shell_completions.go",
+    "line": 61,
+    "kind": "method",
+    "name": "MarkPersistentFlagFilename",
+    "signature": "func (c *Command) MarkPersistentFlagFilename(name string, extensions ...string) error {",
+    "comment": "MarkPersistentFlagFilename instructs the various shell completion implementations to limit completions for the named persistent flag to the"
+  },
+  {
+    "file": "shell_completions.go",
+    "line": 67,
+    "kind": "func",
+    "name": "MarkFlagFilename",
+    "signature": "func MarkFlagFilename(flags *pflag.FlagSet, name string, extensions ...string) error {",
+    "comment": "MarkFlagFilename instructs the various shell completion implementations to limit completions for the named flag to the specified file extensions."
+  },
+  {
+    "file": "shell_completions.go",
+    "line": 77,
+    "kind": "func",
+    "name": "MarkFlagCustom",
+    "signature": "func MarkFlagCustom(flags *pflag.FlagSet, name string, f string) error {",
+    "comment": "MarkFlagCustom adds the BashCompCustom annotation to the named flag, if it exists. The bash completion script will call the bash function f for the flag."
+  },
+  {
+    "file": "shell_completions.go",
+    "line": 83,
+    "kind": "method",
+    "name": "MarkFlagDirname",
+    "signature": "func (c *Command) MarkFlagDirname(name string) error {",
+    "comment": "MarkFlagDirname instructs the various shell completion implementations to limit completions for the named flag to directory names."
+  },
+  {
+    "file": "shell_completions.go",
+    "line": 90,
+    "kind": "method",
+    "name": "MarkPersistentFlagDirname",
+    "signature": "func (c *Command) MarkPersistentFlagDirname(name string) error {",
+    "comment": "MarkPersistentFlagDirname instructs the various shell completion implementations to limit completions for the named persistent flag to"
+  },
+  {
+    "file": "shell_completions.go",
+    "line": 96,
+    "kind": "func",
+    "name": "MarkFlagDirname",
+    "signature": "func MarkFlagDirname(flags *pflag.FlagSet, name string) error {",
+    "comment": "MarkFlagDirname instructs the various shell completion implementations to limit completions for the named flag to directory names."
+  },
+  {
+    "file": "zsh_completions.go",
+    "line": 25,
+    "kind": "method",
+    "name": "GenZshCompletionFile",
+    "signature": "func (c *Command) GenZshCompletionFile(filename string) error {",
+    "comment": "GenZshCompletionFile generates zsh completion file including descriptions."
+  },
+  {
+    "file": "zsh_completions.go",
+    "line": 31,
+    "kind": "method",
+    "name": "GenZshCompletion",
+    "signature": "func (c *Command) GenZshCompletion(w io.Writer) error {",
+    "comment": "GenZshCompletion generates zsh completion file including descriptions and writes it to the passed writer."
+  },
+  {
+    "file": "zsh_completions.go",
+    "line": 36,
+    "kind": "method",
+    "name": "GenZshCompletionFileNoDesc",
+    "signature": "func (c *Command) GenZshCompletionFileNoDesc(filename string) error {",
+    "comment": "GenZshCompletionFileNoDesc generates zsh completion file without descriptions."
+  },
+  {
+    "file": "zsh_completions.go",
+    "line": 42,
+    "kind": "method",
+    "name": "GenZshCompletionNoDesc",
+    "signature": "func (c *Command) GenZshCompletionNoDesc(w io.Writer) error {",
+    "comment": "GenZshCompletionNoDesc generates zsh completion file without descriptions and writes it to the passed writer."
+  },
+  {
+    "file": "zsh_completions.go",
+    "line": 55,
+    "kind": "method",
+    "name": "MarkZshCompPositionalArgumentFile",
+    "signature": "func (c *Command) MarkZshCompPositionalArgumentFile(argPosition int, patterns ...string) error {",
+    "comment": "MarkZshCompPositionalArgumentFile only worked for zsh and its behavior was not consistent with Bash completion. It has therefore been disabled."
+  },
+  {
+    "file": "zsh_completions.go",
+    "line": 66,
+    "kind": "method",
+    "name": "MarkZshCompPositionalArgumentWords",
+    "signature": "func (c *Command) MarkZshCompPositionalArgumentWords(argPosition int, words ...string) error {",
+    "comment": "MarkZshCompPositionalArgumentWords only worked for zsh. It has therefore been disabled."
+  },
+  {
+    "file": "zsh_completions.go",
+    "line": 70,
+    "kind": "method",
+    "name": "genZshCompletionFile",
+    "signature": "func (c *Command) genZshCompletionFile(filename string, includeDesc bool) error {",
+    "comment": ""
+  },
+  {
+    "file": "zsh_completions.go",
+    "line": 80,
+    "kind": "method",
+    "name": "genZshCompletion",
+    "signature": "func (c *Command) genZshCompletion(w io.Writer, includeDesc bool) error {",
+    "comment": ""
+  },
+  {
+    "file": "zsh_completions.go",
+    "line": 87,
+    "kind": "func",
+    "name": "genZshComp",
+    "signature": "func genZshComp(buf io.StringWriter, name string, includeDesc bool) {",
+    "comment": ""
+  },
+  {
+    "file": "zsh_completions_test.go",
+    "line": 23,
+    "kind": "func",
+    "name": "TestZshCompletionWithActiveHelp",
+    "signature": "func TestZshCompletionWithActiveHelp(t *testing.T) {",
+    "comment": ""
+  }
+]

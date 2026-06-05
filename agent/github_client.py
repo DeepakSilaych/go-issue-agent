@@ -120,19 +120,24 @@ def _fetch_issue_html(repo: str, number: int) -> Issue:
 def clone_or_update_repo(repo: str, clone_dir: str) -> str:
     """
     Clone a GitHub repo into clone_dir/{repo_name} if not present,
-    or pull latest changes if it already exists. Returns the repo path.
+    or fetch the latest refs if it already exists. Returns the repo path.
+
+    We `fetch` (not `pull`) on purpose: create_fix_branch resets the working
+    tree to the default branch tip, so we only need up-to-date remote refs.
     """
     repo_name = repo.split("/")[-1]
     target = Path(clone_dir) / repo_name
 
     if target.exists():
-        print(f"  Repo exists at {target}, pulling latest...")
+        print(f"  Repo exists at {target}, fetching latest...")
         subprocess.run(
-            ["git", "pull", "--quiet"],
+            ["git", "fetch", "--quiet", "origin"],
             cwd=str(target),
             check=False,
             capture_output=True,
         )
+        # Clean up any worktrees left behind by a crashed prior run.
+        subprocess.run(["git", "worktree", "prune"], cwd=str(target), capture_output=True)
     else:
         print(f"  Cloning {repo} into {target}...")
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -142,20 +147,42 @@ def clone_or_update_repo(repo: str, clone_dir: str) -> str:
     return str(target)
 
 
-def create_fix_branch(repo_path: str, issue_number: int) -> str:
-    """Create and checkout a branch for the fix. Returns branch name."""
-    branch = f"fix/issue-{issue_number}"
+def default_branch(repo_path: str) -> str:
+    """Return the repo's default branch name (e.g. 'main' or 'master')."""
     result = subprocess.run(
-        ["git", "checkout", "-b", branch],
+        ["git", "symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"],
         cwd=repo_path,
         capture_output=True,
         text=True,
     )
-    if result.returncode != 0:
-        # Branch may already exist
-        subprocess.run(
-            ["git", "checkout", branch],
+    if result.returncode == 0 and result.stdout.strip():
+        return result.stdout.strip().split("/")[-1]  # "origin/main" -> "main"
+
+    # Fallback: probe common names.
+    for name in ("main", "master"):
+        probe = subprocess.run(
+            ["git", "rev-parse", "--verify", "--quiet", f"origin/{name}"],
             cwd=repo_path,
             capture_output=True,
         )
+        if probe.returncode == 0:
+            return name
+    return "main"
+
+
+def create_fix_branch(repo_path: str, issue_number: int) -> str:
+    """
+    Create a clean fix branch for the issue, reset to the default branch tip.
+
+    This is idempotent: re-running on the same issue discards any changes from a
+    prior run instead of accumulating on top of them, so diffs are reproducible.
+    """
+    branch = f"fix/issue-{issue_number}"
+    base = default_branch(repo_path)
+
+    # Discard uncommitted state, then recreate the branch from the fresh remote tip.
+    subprocess.run(["git", "checkout", "--force", base], cwd=repo_path, capture_output=True)
+    subprocess.run(["git", "reset", "--hard", f"origin/{base}"], cwd=repo_path, capture_output=True)
+    subprocess.run(["git", "clean", "-fd"], cwd=repo_path, capture_output=True)
+    subprocess.run(["git", "checkout", "-B", branch], cwd=repo_path, capture_output=True)
     return branch

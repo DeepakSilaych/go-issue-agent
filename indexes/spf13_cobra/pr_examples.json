@@ -1,0 +1,252 @@
+[
+  {
+    "pr_number": 2397,
+    "pr_title": "#2396: Add cobra unique args validator",
+    "pr_body": "#2396: Add cobra unique args validator `NoDuplicateArgs`",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: args.go (+13/-0)\n  modified: args_test.go (+37/-0)\n  modified: site/content/user_guide.md (+1/-0)",
+    "url": "https://github.com/spf13/cobra/pull/2397"
+  },
+  {
+    "pr_number": 2390,
+    "pr_title": "Ignore the linter error",
+    "pr_body": "The CLI only has access to files the user has access to and the user should be able to control where the debug log files go.",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: completions.go (+1/-0)",
+    "url": "https://github.com/spf13/cobra/pull/2390"
+  },
+  {
+    "pr_number": 2389,
+    "pr_title": "Add Ollama to projects_using_cobra",
+    "pr_body": "",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: site/content/projects_using_cobra.md (+1/-0)",
+    "url": "https://github.com/spf13/cobra/pull/2389"
+  },
+  {
+    "pr_number": 2356,
+    "pr_title": "fix: prevent completions from mutating os.Args via append side effect",
+    "pr_body": "## Summary\n\n- Fixes a bug where `getCompletions()` accidentally mutates `os.Args` by writing `\"--\"` into the shared backing array via an `append` with spare capacity\n- Uses a three-index slice expression (`finalArgs[:len:len]`) to cap the slice capacity, forcing `append` to allocate a new array\n- Adds a regression test that confirms the args slice is not corrupted during shell completion\n\n## Detai",
+    "issue_number": 2257,
+    "issue_title": "Completions modify os.Args",
+    "issue_body": "I'm trying to workaround https://github.com/spf13/cobra/issues/1877 by inspecting `os.Args` by hand. In some cases cobra accidentally inserts `--` into `os.Args`.\n\nMinimal example:\n```go\npackage main\n\nimport (\n\t\"os\"\n\t\"strings\"\n\n\t\"github.com/spf13/cobra\"\n)\n\nfunc main() {\n\tcmd := &cobra.Command{\n\t\tTraverseChildren: true,\n\t\tValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]cobra.Completion, cobra.ShellCompDirective) {\n\t\t\tcobra.CompErrorln(strings.Join(os.Args[1:], \", ",
+    "diff_summary": "  modified: completions.go (+4/-1)\n  modified: completions_test.go (+55/-0)",
+    "url": "https://github.com/spf13/cobra/pull/2356"
+  },
+  {
+    "pr_number": 2337,
+    "pr_title": "fix: actions/setup-go v6",
+    "pr_body": "Support for `actions/setup-go@v6` which has some fixes for the buildchain dependency management. See the following:\r\n* Failed CI in: https://github.com/spf13/cobra/pull/2336\r\n* https://github.com/actions/setup-go/issues/688\r\n* https://github.com/actions/go-versions/pull/127",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: .github/workflows/test.yml (+2/-2)",
+    "url": "https://github.com/spf13/cobra/pull/2337"
+  },
+  {
+    "pr_number": 2336,
+    "pr_title": "chore: Migrate from gopkg.in/yaml.v3 to go.yaml.in/yaml/v3",
+    "pr_body": "The original gopkg.in/yaml.v3 was marked unmaintained (April 2025). \r\n\r\ngo.yaml.in/yaml/v3 is now maintained by the official YAML organization and is a drop-in replacement with an identical API.",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: doc/yaml_docs.go (+1/-1)\n  modified: go.mod (+1/-1)\n  modified: go.sum (+2/-2)",
+    "url": "https://github.com/spf13/cobra/pull/2336"
+  },
+  {
+    "pr_number": 2333,
+    "pr_title": "perf: Loop over the bash variable directly instead of starting subprocesses.",
+    "pr_body": "Today, the loop is printing the completions one value per line and then reading one line to a variable. We can just skip the whole IO rigamarole by looping over the completions directly.\r\n\r\nI had added this optimization to https://github.com/spf13/cobra/pull/2126 but it doesn't look like it got picked up by https://github.com/spf13/cobra/pull/1743.",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: bash_completionsV2.go (+2/-2)",
+    "url": "https://github.com/spf13/cobra/pull/2333"
+  },
+  {
+    "pr_number": 2328,
+    "pr_title": "refactor: replace several vars with consts",
+    "pr_body": "I noticed that several values were declared using `var` despite never being reassigned.  \r\nI updated them to `const` to better reflect their immutability and to avoid any unintended modifications in the future.\r\n\r\nThis is a minor refactor only \u2014 no behavioral or functional changes.\r\n\r\nAll existing tests pass.\r\n\r\nFixes #https://github.com/spf13/cobra/issues/2329",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: command.go (+5/-5)",
+    "url": "https://github.com/spf13/cobra/pull/2328"
+  },
+  {
+    "pr_number": 2327,
+    "pr_title": "Fix linter and allow CI to pass",
+    "pr_body": "It seems that with the v2.6.1 version of golangci-lint, govet is too agressive about removing the old \"// +build\" tag.\r\nWe need to keep the old \"+build\" syntax because Cobra still allows to use a Go version as old as 1.15.\r\n\r\nYou can see the failure currently happening in #2325",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: .golangci.yml (+7/-0)",
+    "url": "https://github.com/spf13/cobra/pull/2327"
+  },
+  {
+    "pr_number": 2325,
+    "pr_title": "refactor: change minUsagePadding from var to const",
+    "pr_body": "I noticed minUsagePadding was defined as a var even though it's never changed anywhere. Since it's a fixed value, using const makes more sense and prevents accidental modifications.\r\n\r\nThis is just a small cleanup - no functional changes.\r\n\r\nFixes #2323 ",
+    "issue_number": 2323,
+    "issue_title": "Refactor: make minUsagePadding a constant",
+    "issue_body": "### Summary\n\nThe variable [minUsagePadding](https://github.com/spf13/cobra/blob/main/command.go#L560) is currently defined as a package-level variable, but it represents a fixed configuration value that never changes at runtime.\nIt would be more idiomatic and safer in Go to define it as a constant.\n\n### Current Code\n\n```go\nvar minUsagePadding = 25\n```\n\n### Proposed Change\n\nChange it to:\n\n```go\nconst minUsagePadding = 25\n```\n\n### Rationale\n\n* The value is immutable and conceptually a compile-time",
+    "diff_summary": "  modified: command.go (+1/-1)",
+    "url": "https://github.com/spf13/cobra/pull/2325"
+  },
+  {
+    "pr_number": 2316,
+    "pr_title": "Add documentation for repeated flags functionality",
+    "pr_body": "## PR Summary\r\n\r\nThis PR resolves #2298 by adding documentation for Cobra's repeated flags functionality, covering:\r\n\r\n- **Count Flags**: `CountVarP()` for SSH-style verbose flags (`-v`, `-vv`, `-vvv`) with logging level examples.\r\n- **Array/Slice Flags**: `StringArrayVarP()` and `StringSliceVarP()` for collecting multiple values (e.g., `--input file1.txt --input file2.txt` or `--input file1.txt,f",
+    "issue_number": 2298,
+    "issue_title": "[Docs] Requesting info on repeated flags",
+    "issue_body": "Hello!\nIn some programs such as SSH I can repeat the -v flag in their CLI to invoke different behaviors. For example -v will print info level logs, while `-v -v`, or `-vv` will print debug level logs, and `-vvv, -v -v -v` will be more verbose and so on. \n\nI'd like to know if this is possible, and how to do it programmatically.\n\nIf the info is provided in this issue, I'd be happy to put it into a PR for the user guide to complete this request.",
+    "diff_summary": "  modified: site/content/user_guide.md (+67/-0)",
+    "url": "https://github.com/spf13/cobra/pull/2316"
+  },
+  {
+    "pr_number": 2305,
+    "pr_title": "chore: upgrade pflags v1.0.9",
+    "pr_body": "Edit: blast radius seems to primarily be from projects that use both cobra and pflag. The use of the re-exported type:\r\n\r\nhttps://github.com/spf13/cobra/blob/main/command.go#L41-L42\r\n\r\nshouldn't break projects now that we've cut a v1.10.0 with those changes. This now just upgrades pflag without the need to emergency roll back the original variable type changes.\r\n\r\n---\r\n\r\nThis is an emergency roll ",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: go.mod (+1/-1)\n  modified: go.sum (+2/-2)",
+    "url": "https://github.com/spf13/cobra/pull/2305"
+  },
+  {
+    "pr_number": 2303,
+    "pr_title": "Bump pflag to 1.0.8",
+    "pr_body": "In pflag, we recently made a breaking change in naming to be more inclusive. This change, while doing nothing to address the same uninclusive naming in cobra itself, adjusts to those changes to ensure automatic bumps (if you do them) can continue uninterrupted.\n",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: command.go (+2/-2)\n  modified: go.mod (+1/-1)\n  modified: go.sum (+2/-2)",
+    "url": "https://github.com/spf13/cobra/pull/2303"
+  },
+  {
+    "pr_number": 2299,
+    "pr_title": "Add Periscope to the list of projects using Cobra",
+    "pr_body": "",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: site/content/projects_using_cobra.md (+1/-0)",
+    "url": "https://github.com/spf13/cobra/pull/2299"
+  },
+  {
+    "pr_number": 2285,
+    "pr_title": "fix: quote args in fish shell completion",
+    "pr_body": "The arguments used for dynamic completions in fish were missing quotes. This resulted in an error when one of the arguments had a `*` in it whose expansion matched no file. Once the completion got triggered, fish errored with the message `No matches for wildcard [...]`. Don't quote the first argument as that is the name of the binary.\r\n\r\nCloses #1933 ",
+    "issue_number": 1933,
+    "issue_title": "command line args should be quoted in generated fish completion script",
+    "issue_body": "more specifically here in [fish_completions.go:56][1]:\r\n\r\n```fish\r\nset -l requestComp \"%[10]s=0 $args[1] %[3]s $args[2..-1] $lastArg\"\r\n```\r\n\r\nwhere the references `$args[1]`, `$args[2..-1]` and `$lastArg` should have been quoted.\r\n\r\n[1]: https://github.com/spf13/cobra/blob/c8a20a16bafa2dc85d304b59b2e677c7f75a73a6/fish_completions.go#L56\r\n\r\nDownstream issue: https://github.com/mikefarah/yq/issues/1502",
+    "diff_summary": "  modified: fish_completions.go (+2/-2)",
+    "url": "https://github.com/spf13/cobra/pull/2285"
+  },
+  {
+    "pr_number": 2279,
+    "pr_title": "Upgrade golangci-lint to v2, address findings",
+    "pr_body": "See individual commits for details.",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: .github/workflows/test.yml (+1/-1)\n  modified: .golangci.yml (+15/-13)\n  modified: command_test.go (+1/-1)\n  modified: completions.go (+2/-2)\n  modified: completions_test.go (+6/-7)\n  modified: doc/man_docs.go (+2/-2)\n  modified: doc/md_docs.go (+4/-4)\n  modified: doc/rest_docs.go (+4/-4)",
+    "url": "https://github.com/spf13/cobra/pull/2279"
+  },
+  {
+    "pr_number": 2267,
+    "pr_title": "Update Readme (Warp)",
+    "pr_body": "",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: README.md (+13/-0)",
+    "url": "https://github.com/spf13/cobra/pull/2267"
+  },
+  {
+    "pr_number": 2256,
+    "pr_title": "chore: Rm GitHub Action PR size labeler",
+    "pr_body": "The maintainers have gotten very little value from the GitHub Action PR size labeler (since it's been difficult to denote what really constitutes a PR that's \"too big\"): this PR removes that Action in favor of a cleaner contributor experience.",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  removed: .github/workflows/size-labeler.yml (+0/-33)",
+    "url": "https://github.com/spf13/cobra/pull/2256"
+  },
+  {
+    "pr_number": 2253,
+    "pr_title": "feat: Add security policy",
+    "pr_body": "Closes #1658 \r\n\r\nMaintainers and community: please review this policy and let us know if there's something missing!\r\n\r\ncc @marckhouzam @spf13",
+    "issue_number": 1658,
+    "issue_title": "Define a security policy",
+    "issue_body": "`cobra` needs a security policy.\r\n\r\nGenerally, this should define:\r\n- How users should report vulnerabilities\r\n- How cobra maintainers respond\r\n- How known security vulnerabilities and CVEs are communicated to the community\r\n\r\n[Inspiration from Open Web Application Security Project](https://cheatsheetseries.owasp.org/cheatsheets/Vulnerable_Dependency_Management_Cheat_Sheet.html)\r\n\r\nWe'd also like any input from the community since, in the end, all these policies serve the community",
+    "diff_summary": "  added: SECURITY.md (+105/-0)",
+    "url": "https://github.com/spf13/cobra/pull/2253"
+  },
+  {
+    "pr_number": 2248,
+    "pr_title": "Update command.go",
+    "pr_body": "Fix spelling in the help output.\r\n\r\ntopcis -> topics",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: command.go (+1/-1)",
+    "url": "https://github.com/spf13/cobra/pull/2248"
+  },
+  {
+    "pr_number": 2241,
+    "pr_title": "Flow context to command in SetHelpFunc",
+    "pr_body": "Fixes https://github.com/spf13/cobra/issues/2240",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: command.go (+5/-0)\n  modified: command_test.go (+31/-0)",
+    "url": "https://github.com/spf13/cobra/pull/2241"
+  },
+  {
+    "pr_number": 2238,
+    "pr_title": "The default ShellCompDirective can be customized for a command and its subcommands",
+    "pr_body": "Closes #2209, #2221 \r\n\r\n#2221 proposed a solution where the custom `DefaultShellCompDirective` only applied to a given command.\r\n\r\nIn https://github.com/spf13/cobra/pull/2221#discussion_r1923845125, alternative approaches were discussed.\r\nWe agreed on a recursive solution, where a change applies to a command and its subcommands.\r\n\r\nTo ease review, I open a new PR for this approach.",
+    "issue_number": 2209,
+    "issue_title": "Feature request: Set a default completion function",
+    "issue_body": "In my experience, not many flags actually require completion of files.\r\n\r\nSome have dynamic completions, but a great deal of them take free-form string parameters where no completion can be offered.\r\nUnfortunately, the default completion for a flag with no completion function in Cobra is file completion.\r\nThis forces me to register a `cobra.NoFileCompletions` for each flag of that category.\r\n\r\nAs an example, completion for `docker run` has 56 flags where no meaningful FlagCompletionFunc exists.\r",
+    "diff_summary": "  modified: completions.go (+15/-0)\n  modified: completions_test.go (+57/-0)\n  modified: site/content/completions/_index.md (+30/-0)",
+    "url": "https://github.com/spf13/cobra/pull/2238"
+  },
+  {
+    "pr_number": 2237,
+    "pr_title": "Remove traling curlybrace",
+    "pr_body": "",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: site/content/completions/_index.md (+1/-1)",
+    "url": "https://github.com/spf13/cobra/pull/2237"
+  },
+  {
+    "pr_number": 2236,
+    "pr_title": "Test with Go 1.24",
+    "pr_body": "",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: .github/workflows/test.yml (+1/-0)",
+    "url": "https://github.com/spf13/cobra/pull/2236"
+  },
+  {
+    "pr_number": 2235,
+    "pr_title": "Revert \"Make detection for test-binary more universal (#2173)\"",
+    "pr_body": "This reverts commit d1e9d85fcf592461f3bc2f4b6d5e140c4c0aabf8.\r\n\r\nSome programs set os.Args in their unit tests and this change would break those tests.\r\n\r\nRef: https://github.com/spf13/cobra/pull/2173#issuecomment-2661544195",
+    "issue_number": null,
+    "issue_title": "",
+    "issue_body": "",
+    "diff_summary": "  modified: command.go (+3/-5)\n  removed: command_go120.go (+0/-33)\n  removed: command_go121.go (+0/-25)\n  modified: command_test.go (+0/-13)",
+    "url": "https://github.com/spf13/cobra/pull/2235"
+  }
+]
