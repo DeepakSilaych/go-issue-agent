@@ -387,7 +387,7 @@ def build_graph(provider: str, model: str):
             project_rules=state["project_rules"],
             file_contents=state["file_contents"] + f"\n\n## Similar Past PRs\n{state['prs_text']}",
         )
-        text = _text(llm.bind(max_tokens=2048).invoke([HumanMessage(content=prompt)]))
+        text = _text(llm.invoke([HumanMessage(content=prompt)]))
         print(f"\n{text[:800]}...\n" if len(text) > 800 else f"\n{text}\n")
         return {"fix_plan": text}
 
@@ -547,7 +547,7 @@ def build_graph(provider: str, model: str):
             diff=diff[:8000],
             test_results=f"Tests: {'PASS' if tests_pass else 'FAIL'}\n\n{test_output[:2000]}",
         )
-        pr_summary = _text(llm.bind(max_tokens=1024).invoke([HumanMessage(content=prompt)]))
+        pr_summary = _text(llm.invoke([HumanMessage(content=prompt)]))
 
         result = {
             "issue": {"number": issue.number, "title": issue.title, "url": issue.url},

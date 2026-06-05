@@ -56,12 +56,15 @@ def make_chat_model(provider: str, model: str = "", max_tokens: int = DEFAULT_MA
         endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT", "").rstrip("/")
         if not endpoint:
             raise ValueError("AZURE_OPENAI_ENDPOINT is not set.")
+        # Newer OpenAI/Azure models (o-series, gpt-5 family) reject `max_tokens` and
+        # require `max_completion_tokens`; passing it via model_kwargs works for both
+        # those and classic chat models.
         return AzureChatOpenAI(
             azure_deployment=model or os.environ.get("AZURE_OPENAI_DEPLOYMENT") or "gpt-4o",
             api_version=os.environ.get("AZURE_OPENAI_API_VERSION", "2024-02-01"),
             azure_endpoint=endpoint,
-            max_tokens=max_tokens,
             max_retries=MAX_RETRIES,
+            model_kwargs={"max_completion_tokens": max_tokens},
         )
 
     raise ValueError(
