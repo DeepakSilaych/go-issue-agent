@@ -1,0 +1,124 @@
+[
+  {
+    "repo": "spf13/cobra",
+    "issue_number": 1658,
+    "pr_number": 2253,
+    "title": "Define a security policy",
+    "body": "`cobra` needs a security policy.\r\n\r\nGenerally, this should define:\r\n- How users should report vulnerabilities\r\n- How cobra maintainers respond\r\n- How known security vulnerabilities and CVEs are communicated to the community\r\n\r\n[Inspiration from Open Web Application Security Project](https://cheatsheetseries.owasp.org/cheatsheets/Vulnerable_Dependency_Management_Cheat_Sheet.html)\r\n\r\nWe'd also like any input from the community since, in the end, all these policies serve the community",
+    "ground_truth_files": [
+      "SECURITY.md"
+    ],
+    "ground_truth_go_files": [],
+    "kind": "docs",
+    "base_commit": null,
+    "held_out": false,
+    "note": "in pre-built index (symbol retrieval is independent of the PR index)"
+  },
+  {
+    "repo": "spf13/cobra",
+    "issue_number": 1933,
+    "pr_number": 2285,
+    "title": "command line args should be quoted in generated fish completion script",
+    "body": "more specifically here in [fish_completions.go:56][1]:\r\n\r\n```fish\r\nset -l requestComp \"%[10]s=0 $args[1] %[3]s $args[2..-1] $lastArg\"\r\n```\r\n\r\nwhere the references `$args[1]`, `$args[2..-1]` and `$lastArg` should have been quoted.\r\n\r\n[1]: https://github.com/spf13/cobra/blob/c8a20a16bafa2dc85d304b59b2e677c7f75a73a6/fish_completions.go#L56\r\n\r\nDownstream issue: https://github.com/mikefarah/yq/issues/1502",
+    "ground_truth_files": [
+      "fish_completions.go"
+    ],
+    "ground_truth_go_files": [
+      "fish_completions.go"
+    ],
+    "kind": "code",
+    "base_commit": null,
+    "held_out": false,
+    "note": "in pre-built index (symbol retrieval is independent of the PR index)"
+  },
+  {
+    "repo": "spf13/cobra",
+    "issue_number": 2060,
+    "pr_number": 2061,
+    "title": "Completion should not complete the --help/-h and --version/-v flags if DisableFlagParsing==true",
+    "body": "When a command sets DisableFlagParsing=true it handles its own flag parsing, so cobra should not auto-complete the built-in --help/-h/--version/-v flags. Otherwise plugins (which set DisableFlagParsing=true) get those flags completed twice.",
+    "ground_truth_files": [
+      "completions.go",
+      "completions_test.go"
+    ],
+    "ground_truth_go_files": [
+      "completions.go",
+      "completions_test.go"
+    ],
+    "kind": "code",
+    "base_commit": "8b1eba47616566fc4d258a93da48d5d8741865f0",
+    "held_out": true,
+    "note": "HELD OUT: fixing PR #2061 is not in the shipped index (no leakage)"
+  },
+  {
+    "repo": "spf13/cobra",
+    "issue_number": 2209,
+    "pr_number": 2238,
+    "title": "Feature request: Set a default completion function",
+    "body": "In my experience, not many flags actually require completion of files.\r\n\r\nSome have dynamic completions, but a great deal of them take free-form string parameters where no completion can be offered.\r\nUnfortunately, the default completion for a flag with no completion function in Cobra is file completion.\r\nThis forces me to register a `cobra.NoFileCompletions` for each flag of that category.\r\n\r\nAs an example, completion for `docker run` has 56 flags where no meaningful FlagCompletionFunc exists.\r",
+    "ground_truth_files": [
+      "completions.go",
+      "completions_test.go",
+      "site/content/completions/_index.md"
+    ],
+    "ground_truth_go_files": [
+      "completions.go",
+      "completions_test.go"
+    ],
+    "kind": "code",
+    "base_commit": null,
+    "held_out": false,
+    "note": "in pre-built index (symbol retrieval is independent of the PR index)"
+  },
+  {
+    "repo": "spf13/cobra",
+    "issue_number": 2257,
+    "pr_number": 2356,
+    "title": "Completions modify os.Args",
+    "body": "I'm trying to workaround https://github.com/spf13/cobra/issues/1877 by inspecting `os.Args` by hand. In some cases cobra accidentally inserts `--` into `os.Args`.\n\nMinimal example:\n```go\npackage main\n\nimport (\n\t\"os\"\n\t\"strings\"\n\n\t\"github.com/spf13/cobra\"\n)\n\nfunc main() {\n\tcmd := &cobra.Command{\n\t\tTraverseChildren: true,\n\t\tValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]cobra.Completion, cobra.ShellCompDirective) {\n\t\t\tcobra.CompErrorln(strings.Join(os.Args[1:], \", ",
+    "ground_truth_files": [
+      "completions.go",
+      "completions_test.go"
+    ],
+    "ground_truth_go_files": [
+      "completions.go",
+      "completions_test.go"
+    ],
+    "kind": "code",
+    "base_commit": "f2878bab8c96afd6e36968af96343b35dbb82a82",
+    "held_out": false,
+    "note": "in pre-built index (symbol retrieval is independent of the PR index)"
+  },
+  {
+    "repo": "spf13/cobra",
+    "issue_number": 2298,
+    "pr_number": 2316,
+    "title": "[Docs] Requesting info on repeated flags",
+    "body": "Hello!\nIn some programs such as SSH I can repeat the -v flag in their CLI to invoke different behaviors. For example -v will print info level logs, while `-v -v`, or `-vv` will print debug level logs, and `-vvv, -v -v -v` will be more verbose and so on. \n\nI'd like to know if this is possible, and how to do it programmatically.\n\nIf the info is provided in this issue, I'd be happy to put it into a PR for the user guide to complete this request.",
+    "ground_truth_files": [
+      "site/content/user_guide.md"
+    ],
+    "ground_truth_go_files": [],
+    "kind": "docs",
+    "base_commit": null,
+    "held_out": false,
+    "note": "in pre-built index (symbol retrieval is independent of the PR index)"
+  },
+  {
+    "repo": "spf13/cobra",
+    "issue_number": 2323,
+    "pr_number": 2325,
+    "title": "Refactor: make minUsagePadding a constant",
+    "body": "### Summary\n\nThe variable [minUsagePadding](https://github.com/spf13/cobra/blob/main/command.go#L560) is currently defined as a package-level variable, but it represents a fixed configuration value that never changes at runtime.\nIt would be more idiomatic and safer in Go to define it as a constant.\n\n### Current Code\n\n```go\nvar minUsagePadding = 25\n```\n\n### Proposed Change\n\nChange it to:\n\n```go\nconst minUsagePadding = 25\n```\n\n### Rationale\n\n* The value is immutable and conceptually a compile-time",
+    "ground_truth_files": [
+      "command.go"
+    ],
+    "ground_truth_go_files": [
+      "command.go"
+    ],
+    "kind": "code",
+    "base_commit": null,
+    "held_out": false,
+    "note": "in pre-built index (symbol retrieval is independent of the PR index)"
+  }
+]
