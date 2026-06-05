@@ -206,6 +206,20 @@ class ToolExecutor:
         return "\n\n".join(parts)
 
 
+def _safe(fn, tool_name: str, **kwargs) -> str:
+    """
+    Run a tool implementation, converting any exception into an error string.
+
+    Critical for the agent loop: a tool that raises (e.g. a missing `gofmt`/`go`
+    binary, a grep timeout, a binary file) must report the error back to the model
+    so it can recover — never crash the whole ReAct loop.
+    """
+    try:
+        return fn(**kwargs)
+    except Exception as e:  # noqa: BLE001 — deliberately broad; surfaced to the model
+        return f"Error executing {tool_name}: {type(e).__name__}: {e}"
+
+
 def make_tools(repo_path: str) -> list:
     """
     Build the LangChain tool list bound to `repo_path` (a repo or worktree).
@@ -218,31 +232,31 @@ def make_tools(repo_path: str) -> list:
     @tool
     def list_directory(path: str = ".") -> str:
         """List files and directories at a path in the repository. Use '.' for the root."""
-        return ex._tool_list_directory(path)
+        return _safe(ex._tool_list_directory, "list_directory", path=path)
 
     @tool
     def read_file(path: str, start_line: Optional[int] = None, end_line: Optional[int] = None) -> str:
         """Read a file's contents (optionally a 1-indexed inclusive line range). Read before editing."""
-        return ex._tool_read_file(path, start_line, end_line)
+        return _safe(ex._tool_read_file, "read_file", path=path, start_line=start_line, end_line=end_line)
 
     @tool
     def search_code(pattern: str, path: str = ".", case_sensitive: bool = True) -> str:
         """Grep for a pattern across Go source files. Returns file:line:match results."""
-        return ex._tool_search_code(pattern, path, case_sensitive)
+        return _safe(ex._tool_search_code, "search_code", pattern=pattern, path=path, case_sensitive=case_sensitive)
 
     @tool
     def edit_file(path: str, old_content: str, new_content: str) -> str:
         """Replace an exact, unique block of file content with new content. old_content must match exactly."""
-        return ex._tool_edit_file(path, old_content, new_content)
+        return _safe(ex._tool_edit_file, "edit_file", path=path, old_content=old_content, new_content=new_content)
 
     @tool
     def create_file(path: str, content: str) -> str:
         """Create a new file with the given content. Fails if the file already exists."""
-        return ex._tool_create_file(path, content)
+        return _safe(ex._tool_create_file, "create_file", path=path, content=content)
 
     @tool
     def run_command(command: str, timeout: int = 120) -> str:
         """Run a whitelisted command (go build/test/vet, gofmt, git, golangci-lint) in the repo."""
-        return ex._tool_run_command(command, timeout)
+        return _safe(ex._tool_run_command, "run_command", command=command, timeout=timeout)
 
     return [list_directory, read_file, search_code, edit_file, create_file, run_command]
