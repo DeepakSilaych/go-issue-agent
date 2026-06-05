@@ -1,306 +1,69 @@
 """
-Provider-agnostic LLM client that normalizes Anthropic, Groq, and Azure OpenAI APIs.
+LangChain chat-model factory.
 
-Both providers are wrapped to a common interface:
-  client.chat(messages, system, tools) -> (reply_text, tool_calls, stop_reason)
-  client.tool_result_message(tool_call_id, content) -> message dict
+Returns a provider-specific `BaseChatModel` (Anthropic / Groq / Azure OpenAI) with a
+single, uniform interface. The rest of the system speaks LangChain message objects
+(SystemMessage / HumanMessage / AIMessage / ToolMessage) and tool calling, so there is
+no per-provider normalization code to maintain — LangChain handles it.
+
+Usage:
+    llm = make_chat_model("anthropic", "claude-sonnet-4-6")
+    llm.invoke([HumanMessage(content="hi")])               # plain completion
+    llm.with_structured_output(MySchema).invoke([...])     # structured JSON
+    llm.bind(max_tokens=2048).invoke([...])                # per-call overrides
 """
 
-import json
 import os
-import time
-from dataclasses import dataclass
-from typing import Any, Optional
+
+DEFAULT_MODELS = {
+    "anthropic": "claude-sonnet-4-6",
+    "groq": "llama-3.3-70b-versatile",
+    "azure": "gpt-4o",
+}
+
+# Anthropic requires max_tokens; pick a default large enough for a patch turn.
+DEFAULT_MAX_TOKENS = 4096
+MAX_RETRIES = 6  # SDKs back off on 429/503 internally
 
 
-# ---------------------------------------------------------------------------
-# Shared data types
-# ---------------------------------------------------------------------------
+def make_chat_model(provider: str, model: str = "", max_tokens: int = DEFAULT_MAX_TOKENS):
+    """Build a LangChain chat model for the given provider."""
+    provider = provider.lower()
+    model = model or DEFAULT_MODELS.get(provider, "")
 
-@dataclass
-class ToolCall:
-    id: str
-    name: str
-    input: dict
+    if provider == "anthropic":
+        from langchain_anthropic import ChatAnthropic
 
-
-@dataclass
-class ChatResult:
-    text: str               # assistant text (may be empty if tool_use)
-    tool_calls: list[ToolCall]
-    stop_reason: str        # "end_turn" | "tool_use"
-    raw: Any                # original SDK response
-
-
-# ---------------------------------------------------------------------------
-# Anthropic client wrapper
-# ---------------------------------------------------------------------------
-
-class AnthropicClient:
-    def __init__(self, model: str):
-        import anthropic
-        self.client = anthropic.Anthropic()
-        self.model = model
-
-    def chat(
-        self,
-        messages: list[dict],
-        system: str = "",
-        tools: Optional[list[dict]] = None,
-        max_tokens: int = 4096,
-    ) -> ChatResult:
-        kwargs = dict(
-            model=self.model,
+        return ChatAnthropic(
+            model=model,
             max_tokens=max_tokens,
-            messages=messages,
+            max_retries=MAX_RETRIES,
+            timeout=120,
         )
-        if system:
-            kwargs["system"] = system
-        if tools:
-            kwargs["tools"] = tools  # already in Anthropic format
 
-        resp = self.client.messages.create(**kwargs)
+    if provider == "groq":
+        from langchain_groq import ChatGroq
 
-        text = ""
-        tool_calls = []
-        for block in resp.content:
-            if hasattr(block, "text"):
-                text += block.text
-            elif block.type == "tool_use":
-                tool_calls.append(ToolCall(id=block.id, name=block.name, input=block.input))
+        return ChatGroq(
+            model=model,
+            max_tokens=max_tokens,
+            max_retries=MAX_RETRIES,
+        )
 
-        stop = "tool_use" if tool_calls else "end_turn"
-        return ChatResult(text=text, tool_calls=tool_calls, stop_reason=stop, raw=resp)
-
-    def assistant_message(self, result: ChatResult) -> dict:
-        """Convert ChatResult back to the message format for history."""
-        return {"role": "assistant", "content": result.raw.content}
-
-    def tool_result_message(self, tool_calls: list[ToolCall], results: list[str]) -> dict:
-        """Build a user message containing tool results."""
-        return {
-            "role": "user",
-            "content": [
-                {
-                    "type": "tool_result",
-                    "tool_use_id": tc.id,
-                    "content": res,
-                }
-                for tc, res in zip(tool_calls, results)
-            ],
-        }
-
-
-# ---------------------------------------------------------------------------
-# Groq / OpenAI-compatible client wrapper
-# ---------------------------------------------------------------------------
-
-# OpenAI-format tool definitions (converted from Anthropic format at load time)
-def _anthropic_to_openai_tools(tools: list[dict]) -> list[dict]:
-    out = []
-    for t in tools:
-        out.append({
-            "type": "function",
-            "function": {
-                "name": t["name"],
-                "description": t["description"],
-                "parameters": t["input_schema"],
-            },
-        })
-    return out
-
-
-class GroqClient:
-    DEFAULT_MODEL = "llama-3.3-70b-versatile"
-
-    def __init__(self, model: str):
-        from groq import Groq
-        self.client = Groq(api_key=os.environ["GROQ_API_KEY"])
-        self.model = model or self.DEFAULT_MODEL
-
-    def chat(
-        self,
-        messages: list[dict],
-        system: str = "",
-        tools: Optional[list[dict]] = None,
-        max_tokens: int = 4096,
-    ) -> ChatResult:
-        history = []
-        if system:
-            history.append({"role": "system", "content": system})
-        history.extend(messages)
-
-        kwargs = dict(model=self.model, messages=history, max_tokens=max_tokens)
-        if tools:
-            kwargs["tools"] = _anthropic_to_openai_tools(tools)
-            kwargs["tool_choice"] = "auto"
-
-        resp = _retry(lambda: self.client.chat.completions.create(**kwargs))
-        msg = resp.choices[0].message
-        stop = resp.choices[0].finish_reason  # "stop" | "tool_calls"
-
-        text = msg.content or ""
-        tool_calls = []
-        if msg.tool_calls:
-            for tc in msg.tool_calls:
-                try:
-                    args = json.loads(tc.function.arguments)
-                except json.JSONDecodeError:
-                    args = {}
-                tool_calls.append(ToolCall(id=tc.id, name=tc.function.name, input=args))
-
-        normalized_stop = "tool_use" if tool_calls else "end_turn"
-        return ChatResult(text=text, tool_calls=tool_calls, stop_reason=normalized_stop, raw=resp)
-
-    def assistant_message(self, result: ChatResult) -> dict:
-        msg = result.raw.choices[0].message
-        content = msg.content or ""
-        out: dict = {"role": "assistant", "content": content}
-        if msg.tool_calls:
-            out["tool_calls"] = [
-                {
-                    "id": tc.id,
-                    "type": "function",
-                    "function": {"name": tc.function.name, "arguments": tc.function.arguments},
-                }
-                for tc in msg.tool_calls
-            ]
-        return out
-
-    def tool_result_message(self, tool_calls: list[ToolCall], results: list[str]) -> list[dict]:
-        """Groq/OpenAI uses one message per tool result."""
-        return [
-            {"role": "tool", "tool_call_id": tc.id, "content": res}
-            for tc, res in zip(tool_calls, results)
-        ]
-
-
-# ---------------------------------------------------------------------------
-# Azure OpenAI client wrapper
-# ---------------------------------------------------------------------------
-
-class AzureClient:
-    """
-    Azure OpenAI via the openai SDK's AzureOpenAI client.
-
-    Required env vars:
-      AZURE_OPENAI_API_KEY      — your Azure key
-      AZURE_OPENAI_ENDPOINT     — e.g. https://my-resource.openai.azure.com/
-      AZURE_OPENAI_DEPLOYMENT   — deployment name, e.g. gpt-4o
-
-    Optional:
-      AZURE_OPENAI_API_VERSION  — default: 2024-02-01
-    """
-    DEFAULT_API_VERSION = "2024-02-01"
-
-    def __init__(self, model: str):
-        from openai import AzureOpenAI
+    if provider == "azure":
+        from langchain_openai import AzureChatOpenAI
 
         endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT", "").rstrip("/")
-        api_key  = os.environ.get("AZURE_OPENAI_API_KEY", "")
-        version  = os.environ.get("AZURE_OPENAI_API_VERSION", self.DEFAULT_API_VERSION)
-
         if not endpoint:
             raise ValueError("AZURE_OPENAI_ENDPOINT is not set.")
-        if not api_key:
-            raise ValueError("AZURE_OPENAI_API_KEY is not set.")
-
-        self.client = AzureOpenAI(
-            api_key=api_key,
+        return AzureChatOpenAI(
+            azure_deployment=model or os.environ.get("AZURE_OPENAI_DEPLOYMENT") or "gpt-4o",
+            api_version=os.environ.get("AZURE_OPENAI_API_VERSION", "2024-02-01"),
             azure_endpoint=endpoint,
-            api_version=version,
+            max_tokens=max_tokens,
+            max_retries=MAX_RETRIES,
         )
-        # --model flag wins; fall back to AZURE_OPENAI_DEPLOYMENT env var, then "gpt-4o"
-        self.model = model or os.environ.get("AZURE_OPENAI_DEPLOYMENT") or "gpt-4o"
 
-    def chat(
-        self,
-        messages: list[dict],
-        system: str = "",
-        tools: Optional[list[dict]] = None,
-        max_tokens: int = 4096,
-    ) -> ChatResult:
-        history = []
-        if system:
-            history.append({"role": "system", "content": system})
-        history.extend(messages)
-
-        kwargs = dict(model=self.model, messages=history, max_completion_tokens=max_tokens)
-        if tools:
-            kwargs["tools"] = _anthropic_to_openai_tools(tools)
-            kwargs["tool_choice"] = "auto"
-
-        resp = _retry(lambda: self.client.chat.completions.create(**kwargs))
-        msg = resp.choices[0].message
-
-        text = msg.content or ""
-        tool_calls = []
-        if msg.tool_calls:
-            for tc in msg.tool_calls:
-                try:
-                    args = json.loads(tc.function.arguments)
-                except json.JSONDecodeError:
-                    args = {}
-                tool_calls.append(ToolCall(id=tc.id, name=tc.function.name, input=args))
-
-        normalized_stop = "tool_use" if tool_calls else "end_turn"
-        return ChatResult(text=text, tool_calls=tool_calls, stop_reason=normalized_stop, raw=resp)
-
-    def assistant_message(self, result: ChatResult) -> dict:
-        msg = result.raw.choices[0].message
-        out: dict = {"role": "assistant", "content": msg.content or ""}
-        if msg.tool_calls:
-            out["tool_calls"] = [
-                {
-                    "id": tc.id,
-                    "type": "function",
-                    "function": {"name": tc.function.name, "arguments": tc.function.arguments},
-                }
-                for tc in msg.tool_calls
-            ]
-        return out
-
-    def tool_result_message(self, tool_calls: list[ToolCall], results: list[str]) -> list[dict]:
-        return [
-            {"role": "tool", "tool_call_id": tc.id, "content": res}
-            for tc, res in zip(tool_calls, results)
-        ]
-
-
-# ---------------------------------------------------------------------------
-# Retry helper
-# ---------------------------------------------------------------------------
-
-def _retry(fn, max_attempts: int = 7, base_delay: float = 15.0):
-    """Retry fn on 429/503 rate-limit errors with exponential backoff."""
-    for attempt in range(max_attempts):
-        try:
-            return fn()
-        except Exception as e:
-            status = getattr(e, "status_code", None) or getattr(e, "code", None)
-            is_rate_limit = (
-                status in (429, 503)
-                or "rate" in str(e).lower()
-                or "too many" in str(e).lower()
-            )
-            if is_rate_limit and attempt < max_attempts - 1:
-                delay = min(base_delay * (2 ** attempt), 300)  # cap at 5 min
-                print(f"  [rate limit] waiting {delay:.0f}s before retry {attempt+1}/{max_attempts-1}...")
-                time.sleep(delay)
-            else:
-                raise
-
-
-# ---------------------------------------------------------------------------
-# Factory
-# ---------------------------------------------------------------------------
-
-def make_client(provider: str, model: str):
-    if provider == "anthropic":
-        return AnthropicClient(model or "claude-sonnet-4-6")
-    elif provider == "groq":
-        return GroqClient(model or GroqClient.DEFAULT_MODEL)
-    elif provider == "azure":
-        return AzureClient(model or "gpt-4o")
-    else:
-        raise ValueError(f"Unknown provider: {provider!r}. Choose 'anthropic', 'groq', or 'azure'.")
+    raise ValueError(
+        f"Unknown provider: {provider!r}. Choose 'anthropic', 'groq', or 'azure'."
+    )

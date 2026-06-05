@@ -116,7 +116,7 @@ def main(issue: str, repo: str, provider: str, model: str, workspace: str, outpu
         sys.exit(1)
 
     from agent.github_client import fetch_issue
-    from agent.pipeline import Pipeline
+    from agent.pipeline import run_issue
 
     click.echo(f"Provider: {provider}  Model: {resolved_model}")
     click.echo(f"Fetching issue: {issue}")
@@ -129,16 +129,14 @@ def main(issue: str, repo: str, provider: str, model: str, workspace: str, outpu
     click.echo(f"  #{issue_obj.number}: {issue_obj.title}")
     click.echo(f"  Labels: {', '.join(issue_obj.labels) or '(none)'}\n")
 
-    pipeline = Pipeline(
-        repo=issue_obj.repo,
-        clone_dir=workspace,
-        output_dir=output,
-        provider=provider,
-        model=resolved_model,
-    )
-
     try:
-        pipeline.run(issue_obj)
+        run_issue(
+            issue_obj,
+            clone_dir=workspace,
+            output_dir=output,
+            provider=provider,
+            model=resolved_model,
+        )
     except KeyboardInterrupt:
         click.echo("\nInterrupted.", err=True)
         sys.exit(1)

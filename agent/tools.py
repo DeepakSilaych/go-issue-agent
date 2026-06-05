@@ -1,156 +1,28 @@
-"""Tool implementations and Claude tool definitions for the agentic loop."""
+"""
+The agent's tools (its ACI — agent-computer interface).
+
+`ToolExecutor` holds the actual implementations, scoped to one repo/worktree path.
+`make_tools(repo_path)` wraps those implementations as LangChain `@tool` functions so
+they can be handed to `create_react_agent`. Tools are deliberately built for an LLM:
+exact-match edits, unique-match enforcement, informative error messages, and a command
+whitelist.
+"""
 
 import shlex
 import subprocess
 from pathlib import Path
 from typing import Optional
 
-from .go_utils import find_docker, find_go, _go_docker_image
+from langchain_core.tools import tool
 
-# Claude tool schema definitions
-TOOL_DEFINITIONS = [
-    {
-        "name": "list_directory",
-        "description": "List files and directories at a given path in the repository.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "path": {
-                    "type": "string",
-                    "description": "Path relative to repo root. Use '.' for root."
-                }
-            },
-            "required": ["path"]
-        }
-    },
-    {
-        "name": "read_file",
-        "description": "Read the contents of a file. Optionally specify line range.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "path": {
-                    "type": "string",
-                    "description": "Path relative to repo root."
-                },
-                "start_line": {
-                    "type": "integer",
-                    "description": "First line to read (1-indexed, inclusive)."
-                },
-                "end_line": {
-                    "type": "integer",
-                    "description": "Last line to read (1-indexed, inclusive)."
-                }
-            },
-            "required": ["path"]
-        }
-    },
-    {
-        "name": "search_code",
-        "description": "Search for a pattern in Go source files using grep. Returns file:line:match results.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "pattern": {
-                    "type": "string",
-                    "description": "Grep pattern to search for."
-                },
-                "path": {
-                    "type": "string",
-                    "description": "Directory to search (relative to repo root). Defaults to '.'."
-                },
-                "case_sensitive": {
-                    "type": "boolean",
-                    "description": "Whether search is case-sensitive. Default true."
-                }
-            },
-            "required": ["pattern"]
-        }
-    },
-    {
-        "name": "edit_file",
-        "description": (
-            "Edit a file by replacing an exact block of content with new content. "
-            "The old_content must match exactly (including whitespace). "
-            "Use read_file first to get the exact content."
-        ),
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "path": {
-                    "type": "string",
-                    "description": "Path relative to repo root."
-                },
-                "old_content": {
-                    "type": "string",
-                    "description": "Exact content to replace. Must match exactly."
-                },
-                "new_content": {
-                    "type": "string",
-                    "description": "New content to insert in place of old_content."
-                }
-            },
-            "required": ["path", "old_content", "new_content"]
-        }
-    },
-    {
-        "name": "create_file",
-        "description": "Create a new file with given content.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "path": {
-                    "type": "string",
-                    "description": "Path relative to repo root."
-                },
-                "content": {
-                    "type": "string",
-                    "description": "File content to write."
-                }
-            },
-            "required": ["path", "content"]
-        }
-    },
-    {
-        "name": "run_command",
-        "description": (
-            "Run a go or git command in the repository directory. "
-            "Allowed: go build, go test, go vet, gofmt, git diff, git status."
-        ),
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "command": {
-                    "type": "string",
-                    "description": "Shell command to run (must start with go, git, or gofmt)."
-                },
-                "timeout": {
-                    "type": "integer",
-                    "description": "Timeout in seconds. Default 120."
-                }
-            },
-            "required": ["command"]
-        }
-    }
-]
+from .go_utils import find_docker, find_go, _go_docker_image
 
 
 class ToolExecutor:
-    """Executes tool calls made by the Claude agent."""
+    """Implements the agent's tools, scoped to a single repo/worktree path."""
 
     def __init__(self, repo_path: str):
         self.repo_path = Path(repo_path).resolve()
-
-    def execute(self, tool_name: str, tool_input: dict) -> str:
-        handler = getattr(self, f"_tool_{tool_name}", None)
-        if handler is None:
-            return f"Error: Unknown tool '{tool_name}'"
-        try:
-            return handler(**tool_input)
-        except TypeError as e:
-            return f"Error: Invalid arguments for {tool_name}: {e}"
-        except Exception as e:
-            return f"Error executing {tool_name}: {type(e).__name__}: {e}"
 
     def _tool_list_directory(self, path: str = ".") -> str:
         full = self.repo_path / path
@@ -332,3 +204,45 @@ class ToolExecutor:
             parts.append(f"stderr:\n{result.stderr.rstrip()}")
         parts.append(f"exit_code: {result.returncode}")
         return "\n\n".join(parts)
+
+
+def make_tools(repo_path: str) -> list:
+    """
+    Build the LangChain tool list bound to `repo_path` (a repo or worktree).
+
+    Each tool closes over a ToolExecutor scoped to that path, so parallel patch
+    candidates running in different worktrees get isolated tool sets.
+    """
+    ex = ToolExecutor(repo_path)
+
+    @tool
+    def list_directory(path: str = ".") -> str:
+        """List files and directories at a path in the repository. Use '.' for the root."""
+        return ex._tool_list_directory(path)
+
+    @tool
+    def read_file(path: str, start_line: Optional[int] = None, end_line: Optional[int] = None) -> str:
+        """Read a file's contents (optionally a 1-indexed inclusive line range). Read before editing."""
+        return ex._tool_read_file(path, start_line, end_line)
+
+    @tool
+    def search_code(pattern: str, path: str = ".", case_sensitive: bool = True) -> str:
+        """Grep for a pattern across Go source files. Returns file:line:match results."""
+        return ex._tool_search_code(pattern, path, case_sensitive)
+
+    @tool
+    def edit_file(path: str, old_content: str, new_content: str) -> str:
+        """Replace an exact, unique block of file content with new content. old_content must match exactly."""
+        return ex._tool_edit_file(path, old_content, new_content)
+
+    @tool
+    def create_file(path: str, content: str) -> str:
+        """Create a new file with the given content. Fails if the file already exists."""
+        return ex._tool_create_file(path, content)
+
+    @tool
+    def run_command(command: str, timeout: int = 120) -> str:
+        """Run a whitelisted command (go build/test/vet, gofmt, git, golangci-lint) in the repo."""
+        return ex._tool_run_command(command, timeout)
+
+    return [list_directory, read_file, search_code, edit_file, create_file, run_command]

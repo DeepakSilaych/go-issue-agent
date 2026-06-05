@@ -8,7 +8,9 @@ Given a GitHub issue URL, the agent clones the repo, retrieves relevant symbols 
 
 ## Architecture
 
-The system is a **5-phase pipeline** (`agent/pipeline.py`). Each phase has a specific, bounded goal — there is no free-form autonomous loop except inside the patch and self-heal steps, where it is tightly scoped.
+The system is a **5-phase pipeline** built as a **[LangGraph](https://langchain-ai.github.io/langgraph/) `StateGraph`** (`agent/pipeline.py`). Each phase is a graph node with a specific, bounded goal — there is no free-form autonomous loop except inside the patch and self-heal steps, where it runs as a `create_agent` ReAct loop with a tight step budget. The LLM layer is **LangChain** chat models (`langchain-anthropic` / `langchain-groq` / `langchain-openai`), so provider differences are handled by the framework rather than custom glue.
+
+The patch candidates are a **`Send`-based fan-out** (map/reduce): `plan` dispatches one `patch_candidate` per strategy, each runs in its own git worktree, and results are reduced in `select_patch`. Validation feeds a conditional **self-heal loop** (`validate ⇄ self_heal`) until tests pass or the round budget is exhausted.
 
 ```
 Issue URL
@@ -68,6 +70,8 @@ toolchain installed.
 
 | Choice | Reason |
 |--------|--------|
+| LangGraph `StateGraph` | Phases/edges/loops are explicit and inspectable; the heal loop and candidate fan-out are first-class graph constructs, not ad-hoc control flow |
+| LangChain chat models | Provider differences (Anthropic/Groq/Azure tool-calling, structured output) handled by the framework instead of custom normalization code |
 | Fixed 5-phase pipeline | Reliable, interpretable, easy to debug vs. a free-form agent |
 | BM25 retrieval (pure Python) | Lightweight RAG with no embedding service or heavy deps |
 | Similar-PR retrieval | Grounds the fix in the project's real conventions and file layout |
@@ -243,9 +247,9 @@ go-issue-agent/
 ├── .env.example
 │
 ├── agent/
-│   ├── pipeline.py       # 5-phase orchestrator
-│   ├── llm_client.py     # Provider-agnostic client (Anthropic / Groq / Azure)
-│   ├── tools.py          # Tool definitions + ToolExecutor (the agent's ACI)
+│   ├── pipeline.py       # LangGraph StateGraph: the 5-phase pipeline
+│   ├── llm_client.py     # make_chat_model() → LangChain chat model (Anthropic/Groq/Azure)
+│   ├── tools.py          # ToolExecutor + make_tools() LangChain @tool wrappers (the ACI)
 │   ├── github_client.py  # Issue fetching, repo cloning, branch management
 │   ├── indexer.py        # Symbol / PR / test-helper index construction
 │   ├── retrieval.py      # BM25 retrieval over the index
@@ -301,8 +305,9 @@ test style, naming, and what to avoid.
 
 ### Add a new tool
 
-1. Add the tool definition to `TOOL_DEFINITIONS` in `agent/tools.py`.
-2. Add the `_tool_{name}` method to `ToolExecutor`.
+1. Add a `_tool_{name}` method to `ToolExecutor` in `agent/tools.py`.
+2. Expose it as a `@tool` inside `make_tools()` (it's automatically given to the patch
+   and self-heal agents).
 3. Document it in `prompts/patch_candidate.md`.
 
 ### Change the model
