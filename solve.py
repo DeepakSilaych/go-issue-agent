@@ -73,7 +73,14 @@ PROVIDER_DEFAULTS = {
     show_default=True,
     help="Directory for output artifacts (diff, PR summary, JSON).",
 )
-def main(issue: str, repo: str, provider: str, model: str, workspace: str, output: str):
+@click.option(
+    "--base-commit",
+    default=None,
+    help="Solve the issue at this commit/ref (the repo state BEFORE the fix landed). "
+         "Use for fair, SWE-bench-style evaluation against an already-merged issue.",
+)
+def main(issue: str, repo: str, provider: str, model: str, workspace: str, output: str,
+         base_commit: str):
     """
     Solve a GitHub issue from an open-source Go project.
 
@@ -91,7 +98,11 @@ def main(issue: str, repo: str, provider: str, model: str, workspace: str, outpu
       result.json     full structured result
     """
     provider = provider.lower()
-    resolved_model = model or PROVIDER_DEFAULTS[provider]
+    # For Azure, the "model" is the deployment name; default to AZURE_OPENAI_DEPLOYMENT.
+    if provider == "azure":
+        resolved_model = model or os.environ.get("AZURE_OPENAI_DEPLOYMENT") or PROVIDER_DEFAULTS[provider]
+    else:
+        resolved_model = model or PROVIDER_DEFAULTS[provider]
 
     # Validate required API keys
     key_map = {
@@ -136,6 +147,7 @@ def main(issue: str, repo: str, provider: str, model: str, workspace: str, outpu
             output_dir=output,
             provider=provider,
             model=resolved_model,
+            base_commit=base_commit,
         )
     except KeyboardInterrupt:
         click.echo("\nInterrupted.", err=True)

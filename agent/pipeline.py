@@ -116,6 +116,7 @@ class PipelineState(TypedDict, total=False):
     clone_dir: str
     output_dir: str
     project_rules: str
+    base_commit: Optional[str]
     # setup outputs
     repo_path: str
     index: dict
@@ -304,8 +305,12 @@ def build_graph(provider: str, model: str):
 
         print("[setup] Cloning/updating repository...")
         repo_path = clone_or_update_repo(issue.repo, state["clone_dir"])
-        branch = create_fix_branch(repo_path, issue.number)
-        print(f"[setup] Branch: {branch}")
+        base_commit = state.get("base_commit")
+        branch = create_fix_branch(repo_path, issue.number, base_commit)
+        if base_commit:
+            print(f"[setup] Branch: {branch}  (pinned to base {base_commit[:12]})")
+        else:
+            print(f"[setup] Branch: {branch}")
 
         print("[setup] Loading knowledge index...")
         index = _ensure_index(issue.repo, repo_path)
@@ -593,7 +598,8 @@ def build_graph(provider: str, model: str):
 # Public entry point
 # ---------------------------------------------------------------------------
 
-def run_issue(issue: Issue, clone_dir: str, output_dir: str, provider: str, model: str) -> dict:
+def run_issue(issue: Issue, clone_dir: str, output_dir: str, provider: str, model: str,
+              base_commit: Optional[str] = None) -> dict:
     """Run the full pipeline for one issue and return the result dict."""
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     graph = build_graph(provider, model)
@@ -603,6 +609,7 @@ def run_issue(issue: Issue, clone_dir: str, output_dir: str, provider: str, mode
             "clone_dir": clone_dir,
             "output_dir": output_dir,
             "project_rules": load_rules(issue.repo),
+            "base_commit": base_commit,
             "candidates": [],
             "heal_rounds": 0,
         },

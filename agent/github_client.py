@@ -170,19 +170,24 @@ def default_branch(repo_path: str) -> str:
     return "main"
 
 
-def create_fix_branch(repo_path: str, issue_number: int) -> str:
+def create_fix_branch(repo_path: str, issue_number: int, base_commit: Optional[str] = None) -> str:
     """
-    Create a clean fix branch for the issue, reset to the default branch tip.
+    Create a clean fix branch for the issue, reset to a known base.
 
-    This is idempotent: re-running on the same issue discards any changes from a
-    prior run instead of accumulating on top of them, so diffs are reproducible.
+    base_commit: if given (a commit SHA, tag, or ref), the fix branch is created from
+    that exact point — use this to solve an issue at the repository state *before* its
+    fix landed (fair, SWE-bench-style evaluation). If omitted, resets to the default
+    branch tip.
+
+    This is idempotent: re-running on the same issue discards any changes from a prior
+    run instead of accumulating on top of them, so diffs are reproducible.
     """
     branch = f"fix/issue-{issue_number}"
-    base = default_branch(repo_path)
+    base_ref = base_commit if base_commit else f"origin/{default_branch(repo_path)}"
 
-    # Discard uncommitted state, then recreate the branch from the fresh remote tip.
-    subprocess.run(["git", "checkout", "--force", base], cwd=repo_path, capture_output=True)
-    subprocess.run(["git", "reset", "--hard", f"origin/{base}"], cwd=repo_path, capture_output=True)
+    # Discard uncommitted state, then recreate the branch from the pinned base.
+    subprocess.run(["git", "checkout", "--force", base_ref], cwd=repo_path, capture_output=True)
+    subprocess.run(["git", "reset", "--hard", base_ref], cwd=repo_path, capture_output=True)
     subprocess.run(["git", "clean", "-fd"], cwd=repo_path, capture_output=True)
     subprocess.run(["git", "checkout", "-B", branch], cwd=repo_path, capture_output=True)
     return branch
