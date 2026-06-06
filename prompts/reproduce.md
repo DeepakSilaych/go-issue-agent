@@ -22,6 +22,10 @@ Write a single Go test that **reproduces the bug**:
 
 - It must **FAIL on the current (unfixed) code** and **PASS once the issue is fixed**
   (a fail-to-pass test). Assert the *correct/expected* behaviour — so it fails today.
+- Assert **only the specific behaviour the issue describes** (the exact bug). Do NOT add
+  extra positive/negative cases that go beyond the issue — they may depend on behaviour the
+  project does not support, which would make the test fail even after a correct fix. Test the
+  reported bug and nothing more.
 - It must **compile** against the current codebase: use real exported/!exported symbols
   exactly as they appear in the relevant code, the correct package name, and only imports
   that exist.
