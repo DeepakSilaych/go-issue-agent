@@ -13,7 +13,6 @@ Usage:
 """
 
 import os
-import sys
 from pathlib import Path
 
 import click
@@ -36,29 +35,21 @@ if env_file.exists():
 def main(repo: str, workspace: str, index_dir: str, pr_count: int):
     """Build offline knowledge index for a GitHub repo."""
     from agent.github_client import clone_or_update_repo
-    from agent.indexer import (
-        build_symbol_index, build_test_helpers,
-        fetch_pr_examples, save_index, index_exists,
-    )
+    from agent.indexer import build_symbol_index, fetch_pr_examples, save_index
 
     click.echo(f"Building index for {repo}...")
 
     # Clone / update
-    click.echo("\n[1/4] Cloning/updating repo...")
+    click.echo("\n[1/3] Cloning/updating repo...")
     repo_path = clone_or_update_repo(repo, workspace)
 
     # Symbol index
-    click.echo("\n[2/4] Extracting Go symbols...")
+    click.echo("\n[2/3] Extracting Go symbols...")
     symbols = build_symbol_index(repo_path)
     click.echo(f"  Found {len(symbols)} symbols")
 
-    # Test helpers
-    click.echo("\n[3/4] Extracting test helpers...")
-    test_helpers = build_test_helpers(repo_path)
-    click.echo(f"  Found {len(test_helpers)} test helper functions")
-
     # PR examples
-    click.echo(f"\n[4/4] Fetching {pr_count} recent PRs from GitHub...")
+    click.echo(f"\n[3/3] Fetching {pr_count} recent PRs from GitHub...")
     token = os.environ.get("GITHUB_TOKEN")
     if not token:
         click.echo("  Note: no GITHUB_TOKEN set — may hit rate limits")
@@ -66,8 +57,8 @@ def main(repo: str, workspace: str, index_dir: str, pr_count: int):
 
     # Save
     click.echo("\nSaving index...")
-    save_index(repo, symbols, pr_examples, test_helpers, base_dir=index_dir)
-    click.echo(f"\nDone. Run: python solve.py --issue <N> --repo {repo}")
+    save_index(repo, symbols, pr_examples, base_dir=index_dir)
+    click.echo(f"\nDone. Run: python solve.py implement --issue <N> --repo {repo}")
 
 
 if __name__ == "__main__":

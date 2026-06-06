@@ -9,7 +9,7 @@ def build_repo_map(repo_path: str, max_files: int = 80) -> str:
     """
     Build a concise repository map: directory tree + top-level Go symbols.
 
-    The map is designed to fit in ~8k tokens so Claude can reason about
+    The map is designed to fit in ~8k tokens so the model can reason about
     the whole codebase structure before deciding which files to read in full.
     """
     root = Path(repo_path).resolve()

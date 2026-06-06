@@ -73,7 +73,7 @@ def evaluate(repo: str, top_k: int) -> dict:
 
     # Docs cases: the correct behaviour is to surface NO Go file (Go-only index).
     if docs_cases:
-        print(f"\nNon-code (docs) cases — correct behaviour is to surface no Go source file:")
+        print("\nNon-code (docs) cases — correct behaviour is to surface no Go source file:")
         for c in sorted(docs_cases, key=lambda c: c["issue_number"]):
             syms = retrieve_symbols(f"{c['title']} {c['body']}", symbols_index, top_k=top_k)
             ranked = _ranked_files(syms)

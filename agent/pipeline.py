@@ -1,33 +1,39 @@
 """
-LangGraph implementation of the 5-phase issue-fixing pipeline.
+LangGraph implementation of the issue-fixing pipeline, wired per mode by build_graph().
 
-Graph shape:
+implement-mode graph:
 
     START
       │
       ▼
-    setup ── retrieve ── localize ── plan
-                                       │
-                          (fan-out via Send, 1 per candidate)
-                                       ▼
-                               patch_candidate ×N   (each in its own git worktree,
-                                       │             driven by create_react_agent)
-                                       ▼
-                                 select_patch  (rank by tests, apply best diff)
-                                       ▼
-                                   validate  ◀────────┐
-                                       │              │
-                            (tests fail & go avail)   │
-                                       ▼              │
-                                   self_heal ─────────┘
-                                       │
-                              (tests pass / no go / out of rounds)
-                                       ▼
-                                    summary ── END
+    setup ── retrieve ── localize ── plan ── reproduce
+                                                  │
+                                  (fan-out via Send, 1 per candidate)
+                                                  ▼
+                                          patch_candidate ×N   (each in its own git worktree,
+                                                  │             driven by create_agent / TDD)
+                                                  ▼
+                                            select_patch  (rank: repro_pass, tests,
+                                                  │         source-edit, smallest diff)
+                                                  ▼
+                                              validate  ◀────────┐
+                                                  │              │
+                                       (tests fail & go avail)   │
+                                                  ▼              │
+                                              self_heal ─────────┘
+                                                  │
+                                         (tests pass / no go / out of rounds)
+                                                  ▼
+                                               summary ── END
+
+    explain mode: setup → retrieve → localize → plan → explain → END
+    review  mode: setup_review → review → END   (input is a PullRequest)
 
 The LLM layer is LangChain chat models; the patch and self-heal loops use the
-`create_react_agent` prebuilt. Everything else (retrieval, indexing, repo map, Go
-toolchain, worktrees) is the project's own code, reused unchanged.
+`create_agent` ReAct prebuilt. The `reproduce` node generates a fail→pass test and
+verifies it fails on the unfixed code before trusting it as the patch-selection oracle.
+Everything else (retrieval, indexing, repo map, Go toolchain, worktrees) is the project's
+own code, reused unchanged.
 """
 
 import json
@@ -57,7 +63,7 @@ from .github_client import (
     fetch_issue,
 )
 from .go_utils import Worktree, find_docker, find_go, get_diff, go_available, go_build, go_test, go_vet
-from .indexer import build_symbol_index, build_test_helpers, index_exists, load_index
+from .indexer import build_symbol_index, index_exists, load_index
 from .llm_client import make_chat_model
 from .repomap import build_repo_map
 from .retrieval import (
@@ -93,7 +99,8 @@ CANDIDATE_STRATEGIES = [
 
 
 # ---------------------------------------------------------------------------
-# Structured localization schema (replaces hand-rolled JSON extraction)
+# Structured localization schema — the localize node returns this directly via
+# with_structured_output(), so there is no JSON parsing to get wrong.
 # ---------------------------------------------------------------------------
 
 class _EditLocation(BaseModel):
@@ -222,9 +229,8 @@ def _ensure_index(repo: str, repo_path: str) -> dict:
         return index
     print("  No pre-built index found — building symbol index on the fly...")
     symbols = build_symbol_index(repo_path)
-    test_helpers = build_test_helpers(repo_path)
-    print(f"  Built {len(symbols)} symbols, {len(test_helpers)} test helpers")
-    return {"symbols": symbols, "pr_examples": [], "test_helpers": test_helpers}
+    print(f"  Built {len(symbols)} symbols")
+    return {"symbols": symbols, "pr_examples": []}
 
 
 def _load_located_files(repo_path: str, localization: dict) -> str:

@@ -103,7 +103,7 @@ class ToolExecutor:
             except (ValueError, OSError):
                 lines.append(line)
 
-        suffix = f"\n... (showing first 100 of more results)" if len(raw.splitlines()) > 100 else ""
+        suffix = "\n... (showing first 100 of more results)" if len(raw.splitlines()) > 100 else ""
         return "\n".join(lines) + suffix
 
     def _tool_edit_file(self, path: str, old_content: str, new_content: str) -> str:

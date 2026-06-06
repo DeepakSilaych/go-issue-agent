@@ -2,15 +2,12 @@
 Offline repo indexer — run once per repo via build_index.py.
 
 Builds:
-  indexes/{repo_name}/symbols.json   — AST symbol index (func/type/const/var)
+  indexes/{repo_name}/symbols.json   — symbol index (func/type/const/var)
   indexes/{repo_name}/pr_examples.json — recent merged PRs with issue→diff
-  indexes/{repo_name}/test_helpers.json — test utility functions available
 """
 
 import json
-import os
 import re
-import subprocess
 from pathlib import Path
 from typing import Optional
 
@@ -90,20 +87,6 @@ def _extract_file_symbols(filepath: Path, rel_path: str) -> list[dict]:
         i += 1
 
     return symbols
-
-
-def build_test_helpers(repo_path: str) -> list[dict]:
-    """Extract test helper functions (those in *_test.go files)."""
-    root = Path(repo_path).resolve()
-    helpers = []
-
-    for go_file in sorted(root.rglob("*_test.go")):
-        rel = str(go_file.relative_to(root))
-        for sym in _extract_file_symbols(go_file, rel):
-            if sym["kind"] in ("func", "method"):
-                helpers.append(sym)
-
-    return helpers
 
 
 # ---------------------------------------------------------------------------
@@ -200,19 +183,17 @@ def _fetch_pr_files(repo: str, pr_number: int, headers: dict) -> str:
 # Save / load index
 # ---------------------------------------------------------------------------
 
-def save_index(repo: str, symbols: list[dict], pr_examples: list[dict], test_helpers: list[dict], base_dir: str = "indexes"):
+def save_index(repo: str, symbols: list[dict], pr_examples: list[dict], base_dir: str = "indexes"):
     repo_name = repo.replace("/", "_")
     out_dir = Path(base_dir) / repo_name
     out_dir.mkdir(parents=True, exist_ok=True)
 
     (out_dir / "symbols.json").write_text(json.dumps(symbols, indent=2))
     (out_dir / "pr_examples.json").write_text(json.dumps(pr_examples, indent=2))
-    (out_dir / "test_helpers.json").write_text(json.dumps(test_helpers, indent=2))
 
     print(f"  Saved index to {out_dir}/")
     print(f"    symbols:      {len(symbols)}")
     print(f"    PR examples:  {len(pr_examples)}")
-    print(f"    test helpers: {len(test_helpers)}")
 
 
 def load_index(repo: str, base_dir: str = "indexes") -> dict:
@@ -228,7 +209,6 @@ def load_index(repo: str, base_dir: str = "indexes") -> dict:
     return {
         "symbols": _load("symbols.json"),
         "pr_examples": _load("pr_examples.json"),
-        "test_helpers": _load("test_helpers.json"),
     }
 
 

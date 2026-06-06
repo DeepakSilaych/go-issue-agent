@@ -27,7 +27,6 @@ import argparse
 import json
 import os
 import re
-import sys
 from pathlib import Path
 
 # Batch defaults (set BEFORE importing the pipeline, which reads them at import).
@@ -172,7 +171,7 @@ def _report(results: list[dict]):
     print(f"\n{'='*70}\nAGGREGATE\n{'='*70}")
     for k, v in agg.items():
         print(f"  {k:24s} {v}")
-    print(f"\nWrote eval/swe_results.json and eval/SWE_RESULTS.md")
+    print("\nWrote eval/swe_results.json and eval/SWE_RESULTS.md")
 
 
 if __name__ == "__main__":

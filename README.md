@@ -158,7 +158,6 @@ GITHUB_TOKEN=ghp_...
 
 - **Symbol index** — every top-level `func`/`type`/`const`/`var` with file, line, and doc comment
 - **PR examples** — recent merged PRs (linked issue + changed-files summary) for style/conventions
-- **Test helpers** — test utility functions available in the repo
 
 ```bash
 python build_index.py --repo spf13/cobra        # already shipped pre-built
@@ -168,8 +167,8 @@ python build_index.py --repo golangci/golangci-lint
 ```
 
 > Set `GITHUB_TOKEN` before building, or the PR-example fetch will be rate-limited
-> (unauthenticated GitHub allows ~60 requests/hour). Symbol and test-helper indexing
-> are fully offline and need no token.
+> (unauthenticated GitHub allows ~60 requests/hour). Symbol indexing is fully offline
+> and needs no token.
 
 If you run `solve.py` on a repo with **no** pre-built index, the agent transparently
 builds a symbol-only index on the fly (no PR examples) so it still runs — just without
@@ -291,7 +290,7 @@ Watch for: `✓ Repro test … FAILS on unfixed code` → `repro=PASS` on the ca
 ```
 go-issue-agent/
 ├── solve.py              # CLI entry point
-├── build_index.py        # Offline index builder (symbols + PRs + test helpers)
+├── build_index.py        # Offline index builder (symbols + PR examples)
 ├── requirements.txt
 ├── .env.example
 │
@@ -300,7 +299,7 @@ go-issue-agent/
 │   ├── llm_client.py     # make_chat_model() → LangChain chat model (Anthropic/Groq/Azure)
 │   ├── tools.py          # ToolExecutor + make_tools() LangChain @tool wrappers (the ACI)
 │   ├── github_client.py  # Issue fetching, repo cloning, branch management
-│   ├── indexer.py        # Symbol / PR / test-helper index construction
+│   ├── indexer.py        # Symbol + PR-example index construction
 │   ├── retrieval.py      # BM25 retrieval over the index
 │   ├── repomap.py        # Lightweight repo map for localization
 │   └── go_utils.py       # Go toolchain (local or Docker) + git worktrees
