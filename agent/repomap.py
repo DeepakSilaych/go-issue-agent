@@ -97,7 +97,7 @@ def _extract_symbols(filepath: Path) -> str:
     for i, line in enumerate(lines, 1):
         if line.startswith("//") or not line.strip():
             continue
-        for pat, kind in patterns:
+        for pat, _kind in patterns:
             if pat.match(line):
                 # Trim long signatures
                 sig = line.rstrip()

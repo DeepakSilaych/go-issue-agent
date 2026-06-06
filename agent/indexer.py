@@ -56,7 +56,7 @@ def _extract_file_symbols(filepath: Path, rel_path: str) -> list[dict]:
         comment_lines = []
         j = i - 1
         while j >= 0 and lines[j].strip().startswith("//"):
-            comment_lines.insert(0, lines[j].strip().lstrip("//").strip())
+            comment_lines.insert(0, lines[j].strip().lstrip("/").strip())
             j -= 1
         comment = " ".join(comment_lines[:2])  # first 2 comment lines
 
