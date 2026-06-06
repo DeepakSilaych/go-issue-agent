@@ -71,6 +71,7 @@ from .tools import make_tools
 MAX_PATCH_RECURSION = 60   # create_react_agent step budget per candidate
 MAX_HEAL_RECURSION = 80    # heal agent re-runs (slow) tests, so it needs more headroom
 MAX_HEAL_ROUNDS = 3
+MAX_REPRO_ATTEMPTS = 3     # repair the reproduction test with compile/run feedback
 
 # Knobs (overridable via env for batch evaluation / cost control):
 #   GIA_NUM_CANDIDATES — patch candidates to sample (default 3)
@@ -306,6 +307,12 @@ def _apply_candidate_diff(repo_path: str, diff: str) -> bool:
     return False
 
 
+def _revert_build_files(repo_path: str):
+    """Discard go.mod/go.sum changes — running `go test` (esp. in the golang Docker image)
+    writes a `toolchain` line that is noise, not part of the fix. Fixes rarely touch go.mod."""
+    subprocess.run(["git", "checkout", "--", "go.mod", "go.sum"], cwd=repo_path, capture_output=True)
+
+
 def _has_source_edit(diff: str) -> bool:
     """True if the diff changes at least one Go SOURCE file (not just _test.go)."""
     files = re.findall(r"^diff --git a/(.+?) b/", diff or "", re.MULTILINE)
@@ -474,41 +481,53 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
             return {"repro_valid": False}  # need Go to verify F->P; skip in lean mode
         issue = state["issue"]
         print("\n[reproduce] Generating a fail→pass reproduction test...")
-        prompt = _load_prompt("reproduce").format(
+        base_prompt = _load_prompt("reproduce").format(
             issue_title=issue.title, issue_url=issue.url,
             issue_body=issue.body or "(no body)",
             file_contents=state["file_contents"], fix_plan=state["fix_plan"],
         )
-        try:
-            rt = llm.with_structured_output(ReproTest).invoke([HumanMessage(content=prompt)])
-        except Exception as e:
-            print(f"  repro generation failed ({type(e).__name__}); continuing without oracle.")
-            return {"repro_valid": False}
+        structured = llm.with_structured_output(ReproTest)
+        feedback = ""  # execution feedback accumulated across repair attempts
 
-        if not rt.test_name.strip() or not rt.code.strip():
-            print("  No reproduction test produced (non-testable issue?).")
-            return {"repro_valid": False}
+        for attempt in range(1, MAX_REPRO_ATTEMPTS + 1):
+            try:
+                rt = structured.invoke([HumanMessage(content=base_prompt + feedback)])
+            except Exception as e:
+                print(f"  repro generation failed ({type(e).__name__}); continuing without oracle.")
+                return {"repro_valid": False}
+            if not rt.test_name.strip() or not rt.code.strip():
+                print("  No reproduction test produced (non-testable issue?).")
+                return {"repro_valid": False}
 
-        repro_file = rt.file.strip() or f"repro_issue_{issue.number}_test.go"
-        # Verify it FAILS on the current (unfixed) code, in a throwaway worktree.
-        try:
-            with Worktree(state["repo_path"], "repro-verify") as wt:
-                (Path(wt) / repro_file).write_text(rt.code, encoding="utf-8")
-                passed, output = go_test(wt, run_pattern=rt.test_name)
-        except Exception as e:
-            print(f"  repro verify errored ({type(e).__name__}); continuing without oracle.")
-            return {"repro_valid": False}
+            repro_file = rt.file.strip() or f"repro_issue_{issue.number}_test.go"
+            try:
+                with Worktree(state["repo_path"], "repro-verify") as wt:
+                    (Path(wt) / repro_file).write_text(rt.code, encoding="utf-8")
+                    passed, output = go_test(wt, run_pattern=rt.test_name)
+            except Exception as e:
+                print(f"  repro verify errored ({type(e).__name__}); continuing without oracle.")
+                return {"repro_valid": False}
 
-        compile_err = "[build failed]" in output or "build failed" in output
-        if passed:
-            print(f"  Repro test {rt.test_name} PASSES on unfixed code — not a valid reproduction.")
-            return {"repro_valid": False}
-        if compile_err:
-            print(f"  Repro test {rt.test_name} does not compile — discarding.")
-            return {"repro_valid": False}
-        print(f"  ✓ Repro test {rt.test_name} FAILS on unfixed code (valid fail→pass oracle).")
-        return {"repro_valid": True, "repro_file": repro_file,
-                "repro_name": rt.test_name, "repro_code": rt.code}
+            compile_err = "[build failed]" in output or "build failed" in output
+            if not passed and not compile_err:
+                print(f"  ✓ Repro test {rt.test_name} FAILS on unfixed code "
+                      f"(valid fail→pass oracle, attempt {attempt}).")
+                return {"repro_valid": True, "repro_file": repro_file,
+                        "repro_name": rt.test_name, "repro_code": rt.code}
+
+            # Invalid — give execution feedback and try to repair.
+            reason = "does not compile" if compile_err else "PASSES on the buggy code (doesn't reproduce the bug)"
+            print(f"  attempt {attempt}: repro {reason} — repairing." if attempt < MAX_REPRO_ATTEMPTS
+                  else f"  attempt {attempt}: repro {reason} — giving up on the oracle.")
+            feedback = (
+                f"\n\n## Your previous attempt was INVALID — it {reason}.\n"
+                f"Previous test code:\n```go\n{rt.code}\n```\n"
+                f"`go test` output (tail):\n```\n{output[-1200:]}\n```\n"
+                "Return a corrected test that COMPILES against the current code and FAILS on it "
+                "(assert the correct behaviour). Use only real symbols/imports."
+            )
+        print("  Could not produce a valid reproduction test; continuing without oracle.")
+        return {"repro_valid": False}
 
     # ---- Explain mode: synthesize a reviewer-facing explanation --------
     def explain(state: PipelineState) -> dict:
@@ -670,6 +689,7 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
                 (Path(wt) / repro_file).write_text(repro_code, encoding="utf-8")
                 repro_pass, _ = go_test(wt, run_pattern=repro_name)
 
+            _revert_build_files(wt)  # strip go.mod/go.sum toolchain noise
             diff = get_diff(wt)
             repro_tag = f"  repro={'PASS' if repro_pass else 'FAIL'}" if repro_valid else ""
             print(f"    [C{cid}] Finished — diff {len(diff)} bytes — {status}{repro_tag}")
@@ -737,6 +757,7 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
     # ---- Phase 5: validate + self-heal + summary -----------------------
     def validate(state: PipelineState) -> dict:
         repo_path = state["repo_path"]
+        _revert_build_files(repo_path)  # strip go.mod/go.sum toolchain noise from prior test runs
         final_diff = get_diff(repo_path)
         updates = {"final_diff": final_diff}
 
