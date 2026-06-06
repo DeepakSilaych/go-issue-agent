@@ -7,7 +7,7 @@ produced; console formatting is condensed for readability.
 
 **Command:**
 ```bash
-python solve.py --issue https://github.com/spf13/cobra/issues/2396
+python solve.py implement --issue https://github.com/spf13/cobra/issues/2396
 ```
 
 ---
