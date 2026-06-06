@@ -1,4 +1,4 @@
-# Sample Run: go-playground/validator #1550 — UUID uppercase (oracle)
+# Sample run: go-playground/validator #1550, UUID uppercase (oracle)
 
 A **real, captured** `implement` run (Azure `gpt-5.4-mini`) at the **pre-fix commit**, showing
 the reproduction-test oracle on a clean, minimal bug.
@@ -19,11 +19,11 @@ python solve.py implement --issue 1550 --repo go-playground/validator \
   Candidate 2: DONE  tests=PASS  edit=src  repro=PASS
   Candidate 3: error: GraphRecursionError ...   tests=FAIL  edit=src  repro=FAIL
   Best candidate: #1 (repro PASS, tests pass, source edit, diff 1460)
-  Reproduction test TestReproIssue1550UUIDUppercaseValidation: PASS — issue fixed ✓
+  Reproduction test TestReproIssue1550UUIDUppercaseValidation: PASS, issue fixed ✓
   Build: PASS   Tests: PASS   Vet: PASS
 ```
 
-Candidate #3 blew its step budget and failed — the run handled it and ranked it last; #1 and
+Candidate #3 blew its step budget and failed. The run handled it and ranked it last; #1 and
 #2 both fix the repro and keep the suite green, so #1 (smallest diff) wins.
 
 ## The fix (`regexes.go`)
@@ -33,7 +33,7 @@ Candidate #3 blew its step budget and failed — the run handled it and ranked i
 +	uUIDRegexString = "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
 ```
 
-A one-character-class change (`a-f` → `a-fA-F`) — exactly the minimal fix — generated, applied,
+A one-character-class change (`a-f` to `a-fA-F`), exactly the minimal fix, generated, applied,
 and **verified by a test the system wrote itself**.
 
 ```json

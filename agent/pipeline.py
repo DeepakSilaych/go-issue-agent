@@ -768,7 +768,7 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
         best = {**best, "applied": applied}
         if state.get("repro_valid"):
             print(f"  Reproduction test {state.get('repro_name')}: "
-                  f"{'PASS — issue fixed ✓' if best.get('repro_pass') else 'FAIL — not verified fixed'}")
+                  f"{'PASS, issue fixed ✓' if best.get('repro_pass') else 'FAIL, not verified fixed'}")
         return {"best_candidate": best,
                 "tests_pass": best["tests_pass"],
                 "test_output": best.get("test_output", "")}

@@ -1,4 +1,4 @@
-# Sample Walkthrough: cobra#2396 — Add `NoDuplicateArgs` Validator
+# Sample walkthrough: cobra#2396, add a `NoDuplicateArgs` validator
 
 An annotated walkthrough of the five phases for
 [cobra#2396](https://github.com/spf13/cobra/issues/2396), which requests a positional-argument
@@ -28,7 +28,7 @@ BM25 ranks the repo's symbol index against the issue text, and ranks similar mer
     - #1644: args: add MatchAll to combine PositionalArgs validators
 ```
 
-The validator family in `args.go` rises to the top — exactly the file to change.
+The validator family in `args.go` rises to the top, which is exactly the file to change.
 
 ---
 

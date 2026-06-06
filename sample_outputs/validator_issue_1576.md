@@ -1,4 +1,4 @@
-# Sample Run: go-playground/validator #1576 — reproduction-test oracle
+# Sample run: go-playground/validator #1576, reproduction-test oracle
 
 A **real, captured** `implement` run (Azure `gpt-5.4-mini`) on a held-out validator bug,
 run at the **pre-fix commit**. It shows the reproduction-test oracle end to end: generate a
@@ -23,7 +23,7 @@ python solve.py implement --issue 1576 --repo go-playground/validator \
 ```
 
 The agent wrote a test asserting the *correct* behaviour and we verified it actually
-**fails** on the current (buggy) code before trusting it — valid cron strings pass, strings
+**fails** on the current (buggy) code before trusting it. Valid cron strings pass, strings
 with junk around a cron substring are rejected:
 
 ```go
@@ -44,14 +44,14 @@ with junk around a cron substring are rejected:
   Best candidate: #3 (repro PASS, tests pass, source edit, diff 2271)
 ```
 
-All three candidates fix the reproduction test — but #1 and #2 **break the existing
+All three candidates fix the reproduction test, but #1 and #2 **break the existing
 suite**. The ranking `(repro_pass, tests_pass, source_edit, diff)` correctly selects **#3**,
 which passes the reproduction test *and* the full suite.
 
 ## Phase: Validate
 
 ```
-  Reproduction test TestCronValidationRejectsEmbeddedCronSubstring: PASS — issue fixed ✓
+  Reproduction test TestCronValidationRejectsEmbeddedCronSubstring: PASS, issue fixed ✓
   Build: PASS
   Tests: PASS
   Vet:   PASS
@@ -74,11 +74,11 @@ intent ("anchor regex and accept full cron syntax").
 
 **Title:** Fix cron validator to match the entire input
 
-> **What** — The `cron` validator accepted any string containing a cron-like substring
+> **What:** The `cron` validator accepted any string containing a cron-like substring
 > because the regex was not anchored. This anchors the pattern to the full input and updates
 > the tests.
-> **Why** — Validation should pass only when the entire value is a valid cron expression.
-> **Testing** — Added valid cron cases and invalid strings with embedded cron expressions;
+> **Why:** Validation should pass only when the entire value is a valid cron expression.
+> **Testing:** Added valid cron cases and invalid strings with embedded cron expressions;
 > all tests pass.
 >
 > Closes #1576
