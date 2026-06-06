@@ -18,3 +18,5 @@ workspace_t/
 output_t/
 workspace_o/
 output_o/
+!indexes/go-playground_validator
+!indexes/go-playground_validator/**
