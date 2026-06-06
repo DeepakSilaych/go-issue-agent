@@ -20,3 +20,4 @@ workspace_o/
 output_o/
 !indexes/go-playground_validator
 !indexes/go-playground_validator/**
+.ruff_cache/
