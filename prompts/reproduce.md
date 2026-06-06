@@ -36,7 +36,7 @@ Return JSON:
   "file": "repro_issue_<N>_test.go",
   "test_name": "TestReproIssueXxx",
   "package": "cobra",
-  "code": "package cobra\n\nimport (...)\n\nfunc TestReproIssueXxx(t *testing.T) { ... }"
+  "code": "package cobra\n\nimport (...)\n\nfunc TestReproIssueXxx(t *testing.T) {{ ... }}"
 }}
 ```
 
