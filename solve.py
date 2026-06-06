@@ -33,6 +33,15 @@ if env_file.exists():
             v = v.split("#")[0].strip()  # strip inline comments
             os.environ.setdefault(k.strip(), v)
 
+# Sanitize provider config: `docker --env-file` (unlike our .env loader above) does NOT
+# strip inline comments or surrounding whitespace, which silently breaks e.g. the Azure
+# api-version. None of these values legitimately contain '#', so this is safe.
+for _k in ("ANTHROPIC_API_KEY", "GROQ_API_KEY", "AZURE_OPENAI_API_KEY", "AZURE_OPENAI_ENDPOINT",
+           "AZURE_OPENAI_DEPLOYMENT", "AZURE_OPENAI_API_VERSION", "GITHUB_TOKEN"):
+    _v = os.environ.get(_k)
+    if _v:
+        os.environ[_k] = _v.split("#")[0].strip()
+
 PROVIDER_DEFAULTS = {
     "anthropic": "claude-sonnet-4-6",
     "groq":      "llama-3.3-70b-versatile",

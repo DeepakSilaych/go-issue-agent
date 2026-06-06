@@ -1,0 +1,12 @@
+.git
+.venv
+venv
+workspace
+output
+eval/runs
+__pycache__
+**/__pycache__
+*.pyc
+.ruff_cache
+.env
+.DS_Store

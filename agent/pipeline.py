@@ -341,7 +341,20 @@ def _write_output(result: dict, issue_number: int, output_dir: str):
     (out_dir / "result.json").write_text(json.dumps(result, indent=2, default=str))
     (out_dir / "pr_summary.md").write_text(result["pr_summary"])
     (out_dir / "changes.patch").write_text(result["diff"])
-    print(f"\n[output] Written to {out_dir}/")
+
+    # Single self-contained deliverable: PR title + description + diff in one file.
+    status = []
+    if result.get("repro_valid"):
+        status.append("repro " + ("PASS ✓" if result.get("repro_pass") else "FAIL"))
+    status.append("tests " + ("PASS ✓" if result.get("tests_pass") else "FAIL"))
+    combined = (
+        f"{result['pr_summary']}\n\n"
+        f"---\n\n*Validation: {' · '.join(status)}*\n\n"
+        f"## Diff\n\n```diff\n{result['diff']}\n```\n"
+    )
+    (out_dir / "pr.md").write_text(combined)
+
+    print(f"\n[output] Written to {out_dir}/  (pr.md = PR title + description + diff)")
     print(f"\n{'='*60}\nPR SUMMARY\n{'='*60}")
     print(result["pr_summary"])
     print(f"{'='*60}")

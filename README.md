@@ -1,378 +1,94 @@
 # go-issue-agent
 
-An agentic AI system that assists with GitHub issues from open-source Go projects. It has **three modes**:
+An agentic assistant for GitHub issues in open-source **Go** projects. Give it an issue; it
+finds the relevant code, fixes it, runs the tests, and writes a pull request (title +
+description + diff).
 
-- **`explain`** — explain the issue and the proposed solution (analysis, no code changes)
-- **`implement`** — localize, plan, patch, validate, and produce a diff + PR summary
+Three modes:
+
+- **`explain`** — explain the issue and propose a fix (no code changes)
+- **`implement`** — localize → patch → validate → emit a PR (title + description + diff)
 - **`review`** — review a pull request against its issue and the project's conventions
 
-In `implement` mode the agent clones the repo, retrieves relevant symbols and similar past PRs, localizes the fix down to exact lines, plans a targeted change, generates **multiple patch candidates in parallel** and ranks them by test results, self-heals failing tests, and produces a diff and a pull-request summary.
+Built on LangGraph + LangChain. See **[ARCHITECTURE.md](ARCHITECTURE.md)** for how it works.
 
----
+## Quick start (Docker)
 
-## Architecture
-
-The system is a **5-phase pipeline** built as a **[LangGraph](https://langchain-ai.github.io/langgraph/) `StateGraph`** (`agent/pipeline.py`). Each phase is a graph node with a specific, bounded goal — there is no free-form autonomous loop except inside the patch and self-heal steps, where it runs as a `create_agent` ReAct loop with a tight step budget. The LLM layer is **LangChain** chat models (`langchain-anthropic` / `langchain-groq` / `langchain-openai`), so provider differences are handled by the framework rather than custom glue.
-
-The patch candidates are a **`Send`-based fan-out** (map/reduce): `plan` dispatches one `patch_candidate` per strategy, each runs in its own git worktree, and results are reduced in `select_patch`. Validation feeds a conditional **self-heal loop** (`validate ⇄ self_heal`) until tests pass or the round budget is exhausted.
-
-```
-Issue URL
-    │
-    ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Phase 1: RETRIEVE                                          │
-│  Load (or build) an offline index of the repo.             │
-│  BM25-rank Go symbols against the issue text.              │
-│  BM25-rank similar past merged PRs (style + file hints).   │
-│  → top-k symbols, top-k similar PRs                         │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Phase 2: LOCALIZE  (hierarchical: file → func → line)     │
-│  Given retrieved symbols + a repo map, ask the model for    │
-│  precise edit / new-code / test locations.                  │
-│  → edit_locations, new_locations, test_locations, context   │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Phase 3: PLAN                                             │
-│  Load located file contents + similar-PR context.          │
-│  → root cause, step-by-step fix strategy, validation cmd    │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Phase 4: MULTI-PATCH  (3 candidates in parallel)          │
-│  Each candidate runs in an isolated git worktree with a    │
-│  different strategy (minimal / coverage / pattern-match),   │
-│  using a tool-use loop:                                     │
-│    read_file, search_code, edit_file,                       │
-│    create_file, run_command (go build/test/vet)            │
-│  Each candidate is tested; the best is selected             │
-│  (tests pass first, then smallest diff).                    │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-┌─────────────────────────────────────────────────────────────┐
-│  Phase 5: VALIDATE + SELF-HEAL                             │
-│  Apply the winning diff to the working tree.               │
-│  Run go build / test / vet. If tests fail, feed failures    │
-│  back to the model for up to 3 heal rounds.                 │
-│  Generate the PR title + body from diff + test results.     │
-└──────────────────────────┬──────────────────────────────────┘
-                           ▼
-              output/issue-{N}/
-                pr_summary.md
-                changes.patch
-                result.json
-```
-
-If no local `go` binary is found, validation runs inside the official `golang` Docker
-image (tag derived from the target repo's `go.mod`), so the agent works without a Go
-toolchain installed.
-
-### Key Design Choices
-
-| Choice | Reason |
-|--------|--------|
-| LangGraph `StateGraph` | Phases/edges/loops are explicit and inspectable; the heal loop and candidate fan-out are first-class graph constructs, not ad-hoc control flow |
-| LangChain chat models | Provider differences (Anthropic/Groq/Azure tool-calling, structured output) handled by the framework instead of custom normalization code |
-| Fixed 5-phase pipeline | Reliable, interpretable, easy to debug vs. a free-form agent |
-| BM25 retrieval (pure Python) | Lightweight RAG with no embedding service or heavy deps |
-| Similar-PR retrieval | Grounds the fix in the project's real conventions and file layout |
-| Hierarchical localization | Narrows to exact functions/lines, not just "relevant files" |
-| Multi-candidate + test ranking | Agentless-style sampling; picks the candidate that actually passes tests |
-| Git worktrees per candidate | Candidates are generated in true isolation, in parallel |
-| Self-heal loop | Feeds test failures back to the model instead of giving up |
-| Project-specific rules (`rules/*.md`) | Encodes per-project Go conventions so output matches project style |
-| `edit_file` requires exact match | Prevents hallucinated edits; forces read-before-edit |
-| Only `go`/`git`/`gofmt`/`golangci-lint` commands allowed | Sandboxes side effects to safe operations |
-
----
-
-## Supported Repositories
-
-Ships with project-specific convention rules (`rules/*.md`) for the four approved repos:
-
-- `spf13/cobra` — CLI framework
-- `gin-gonic/gin` — HTTP framework
-- `go-playground/validator` — struct validation
-- `golangci/golangci-lint` — linter aggregator
-
-Works on any Go repository; the rules files improve output quality for the above.
-**Pre-built indexes ship for `spf13/cobra` and `go-playground/validator`** (in `indexes/`),
-so symbol- and PR-retrieval work out of the box for both — no setup. For the other repos,
-build an index first (see below).
-
-> **Tip:** `validator` is the best repo for showing the reproduction-test oracle — its bugs
-> are pure functions, so a fail→pass test compiles first-try (see the demo above). `cobra` is
-> best for the localization/eval story (the shipped 27-case evaluation).
-
----
-
-## Setup
-
-### Requirements
-
-- Python 3.9+
-- Git
-- Go 1.21+ **or** Docker (for running tests in the target repo; Docker is used automatically if `go` is absent)
-- An LLM API key — Anthropic, Groq (free tier), or Azure OpenAI
-
-### Install
+The image bundles Python, the Go toolchain, and pre-built indexes (cobra + validator), so one
+command takes an issue and writes a Markdown file with the PR title, description, and diff.
 
 ```bash
-git clone https://github.com/DeepakSilaych/go-issue-agent
-cd go-issue-agent
+docker build -t go-issue-agent .
+
+# Issue (URL or number) → output/issue-<N>/pr.md
+docker run --rm --env-file .env -v "$PWD/output:/app/output" \
+  go-issue-agent https://github.com/spf13/cobra/issues/2396
+```
+
+All three modes:
+
+```bash
+docker run --rm --env-file .env -v "$PWD/output:/app/output" go-issue-agent explain   --issue 2396 --repo spf13/cobra
+docker run --rm --env-file .env -v "$PWD/output:/app/output" go-issue-agent implement --issue 2396 --repo spf13/cobra
+docker run --rm --env-file .env -v "$PWD/output:/app/output" go-issue-agent review    --pr   2356 --repo spf13/cobra
+```
+
+A bare issue defaults to `implement`. Add `--provider groq|azure` for a different provider.
+
+## Configure
+
+Copy `.env.example` to `.env` and set at least one provider:
+
+```
+ANTHROPIC_API_KEY=sk-ant-...        # default provider
+GROQ_API_KEY=gsk_...                # free tier  (--provider groq)
+AZURE_OPENAI_API_KEY=...            # + AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_DEPLOYMENT (--provider azure)
+GITHUB_TOKEN=ghp_...                # optional, raises the GitHub API rate limit
+```
+
+## Run locally (without Docker)
+
+Needs Python 3.9+, Git, and Go 1.21+ (or Docker, used automatically to run tests).
+
+```bash
 pip install -r requirements.txt
-```
-
-### Configure
-
-```bash
-cp .env.example .env
-# Edit .env — add at least one of ANTHROPIC_API_KEY / GROQ_API_KEY / AZURE_OPENAI_*
-```
-
-`.env`:
-```
-# Option A: Anthropic
-ANTHROPIC_API_KEY=sk-ant-...
-
-# Option B: Groq (free tier) — https://console.groq.com
-GROQ_API_KEY=gsk_...
-
-# Option C: Azure OpenAI — set endpoint + deployment too (see .env.example)
-AZURE_OPENAI_API_KEY=...
-AZURE_OPENAI_ENDPOINT=https://<resource>.openai.azure.com/
-AZURE_OPENAI_DEPLOYMENT=gpt-4o
-
-# Optional: raises GitHub API rate limit from 60 to 5000 req/hr (used by build_index.py)
-GITHUB_TOKEN=ghp_...
-```
-
----
-
-## Building an Index (Phase 1 knowledge)
-
-`build_index.py` builds the offline knowledge index a repo's Retrieve phase uses:
-
-- **Symbol index** — every top-level `func`/`type`/`const`/`var` with file, line, and doc comment
-- **PR examples** — recent merged PRs (linked issue + changed-files summary) for style/conventions
-
-```bash
-python build_index.py --repo spf13/cobra        # already shipped pre-built
-python build_index.py --repo gin-gonic/gin
-python build_index.py --repo go-playground/validator
-python build_index.py --repo golangci/golangci-lint
-```
-
-> Set `GITHUB_TOKEN` before building, or the PR-example fetch will be rate-limited
-> (unauthenticated GitHub allows ~60 requests/hour). Symbol indexing is fully offline
-> and needs no token.
-
-If you run `solve.py` on a repo with **no** pre-built index, the agent transparently
-builds a symbol-only index on the fly (no PR examples) so it still runs — just without
-the PR-style grounding.
-
----
-
-## Usage — three modes
-
-The CLI has three subcommands. They share the LangGraph nodes; each mode wires a different
-sub-path of the graph.
-
-```bash
-# 1) EXPLAIN — explain the issue and the proposed solution (no code changes)
-#    graph: setup → retrieve → localize → plan → explain
-python solve.py explain --issue https://github.com/spf13/cobra/issues/2396
-#    → output/issue-2396/explanation.md
-
-# 2) IMPLEMENT — localize, plan, patch (×3 candidates), validate, write a PR summary
-#    graph: setup → retrieve → localize → plan → patch ×N → select → validate ⇄ heal → summary
 python solve.py implement --issue https://github.com/spf13/cobra/issues/2396
-#    steer toward a preferred/modified solution:
-python solve.py implement --issue 2396 --guidance "use a three-index slice, not a copy"
-#    solve at the pre-fix commit (fair, SWE-bench-style evaluation):
-python solve.py implement --issue 2396 --base-commit <sha>
-#    → output/issue-2396/{pr_summary.md, changes.patch, result.json}
-
-# 3) REVIEW — review a pull request against its issue + project conventions
-#    graph: setup_review → review
-python solve.py review --pr https://github.com/spf13/cobra/pull/2356
-#    → output/pr-2356/review.md
 ```
-
-Provider/output flags work on every subcommand:
-
-```bash
-python solve.py implement --issue 2396 --provider groq
-python solve.py explain   --issue 2396 --provider azure
-python solve.py review    --pr 2356   --workspace ./repos --output ./results
-```
-
-### Options (shared)
-
-```
---provider   LLM provider: anthropic | groq | azure (default: anthropic)
---model      Model name / Azure deployment (provider-specific default)
---workspace  Directory to clone repos into (default: ./workspace)
---output     Directory for output artifacts (default: ./output)
-
-explain / implement:  --issue <url|number>  [--repo owner/name]  [--base-commit <sha>]
-implement only:       --guidance "<preferred or modified solution>"
-review:               --pr <url|number>     [--repo owner/name]
-```
-
-### Provider notes
-
-- **Anthropic** (default): `claude-sonnet-4-6`. Pass `--model claude-opus-4-8` for harder issues.
-- **Groq** (free tier): supports tool calling on `llama-3.3-70b-versatile` (128k context).
-  Rate limits (~30 req/min) can slow the patch loop; the client retries on 429 with backoff.
-- **Azure OpenAI**: requires `AZURE_OPENAI_ENDPOINT` and `AZURE_OPENAI_DEPLOYMENT` (the
-  `--model` value or `AZURE_OPENAI_DEPLOYMENT` is your deployment name).
-
----
 
 ## Output
 
-Each mode writes to `output/`:
+| Mode | File(s) in `output/` |
+|------|------|
+| `explain` | `issue-<N>/explanation.md` |
+| `implement` | `issue-<N>/pr.md` (title + description + diff), plus `changes.patch`, `result.json` |
+| `review` | `pr-<N>/review.md` |
 
-| Mode | Path | Files |
-|------|------|-------|
-| `explain` | `output/issue-{N}/` | `explanation.md` — issue + root cause + proposed solution + validation plan |
-| `implement` | `output/issue-{N}/` | `pr_summary.md` (PR title/body), `changes.patch` (`git diff`), `result.json` (diff, `tests_pass`, `build_ok`, `vet_ok`, `diff_applied`, test output, winning candidate id) |
-| `review` | `output/pr-{N}/` | `review.md` — summary, addresses-issue, correctness, conventions, tests, suggestions, verdict |
+Useful flags: `--base-commit <sha>` (solve at the state *before* the fix landed — for fair,
+SWE-bench-style evaluation) and `--guidance "..."` (steer `implement` toward a preferred fix).
 
-In `implement` mode the modified repo is left on a branch named `fix/issue-{N}` in `workspace/{repo-name}/`.
-Re-running on the same issue resets that branch to the upstream default branch first, so
-diffs are reproducible rather than cumulative.
+## Demos & evaluation
 
----
+- **Reproduction-test oracle** (real captured runs):
+  [`sample_outputs/validator_issue_1576.md`](sample_outputs/validator_issue_1576.md),
+  [`sample_outputs/validator_issue_1550.md`](sample_outputs/validator_issue_1550.md) — the agent
+  writes a test that fails on the bug, fixes it, and the test passes (verified, not assumed).
+- **Evaluation**: [`eval/SWE_RESULTS.md`](eval/SWE_RESULTS.md) — 27 held-out cobra issues solved
+  at their pre-fix commit and compared to the real merged PRs (localized **78% → 93%** after
+  fixes the eval itself surfaced). Reproduce with `python -m eval.swe_eval`.
 
-## Demos & Sample Output
+## Supported repositories
 
-- **Reproduction-test oracle (real captured run):**
-  [`sample_outputs/validator_issue_1576.md`](sample_outputs/validator_issue_1576.md) —
-  the agent writes a test that **fails** on the buggy cron validator, fixes `regexes.go`,
-  and the test **passes** (`repro_pass: true`); it then picks the candidate that also keeps
-  the existing suite green. *"Actually solved, verified by a test the system wrote."*
-- **Annotated walkthrough:**
-  [`sample_outputs/cobra_issue_2396.md`](sample_outputs/cobra_issue_2396.md) — the five
-  phases on cobra#2396, end to end.
-- **Evaluation:** [`eval/SWE_RESULTS.md`](eval/SWE_RESULTS.md) — SWE-bench-style run over 27
-  held-out cobra issues (agent at the pre-fix commit vs. the real PR), with a before→after:
-  localized **77.8% → 92.6%**, recall **0.67 → 0.81** after fixes the eval itself surfaced.
-  Reproduce with `python -m eval.swe_eval --provider <p>`.
-
-### Runbook — reproduce the oracle demos live
-
-Both are real `[Bug]` issues run at their **pre-fix commit** (so the fix isn't already there).
-Needs Go or Docker (for the fail→pass verification) and a provider key.
-
-```bash
-# 1) cron validator accepts arbitrary strings (regex anchoring)
-python solve.py implement --issue 1576 --repo go-playground/validator \
-  --provider azure --base-commit 8eb2659789a33bda9262ce62eed2d714539dc8c5
-
-# 2) UUID validation fails for uppercase UUIDs (a-f -> a-fA-F)
-python solve.py implement --issue 1550 --repo go-playground/validator \
-  --provider azure --base-commit b9258bd2b7bbab41c3d99090cac4a659c5f1a60c
-```
-
-Watch for: `✓ Repro test … FAILS on unfixed code` → `repro=PASS` on the candidates →
-`Reproduction test …: PASS — issue fixed ✓`. Captured transcripts:
-[#1576](sample_outputs/validator_issue_1576.md) · [#1550](sample_outputs/validator_issue_1550.md).
-
----
-
-## Project Structure
-
-```
-go-issue-agent/
-├── solve.py              # CLI entry point
-├── build_index.py        # Offline index builder (symbols + PR examples)
-├── requirements.txt
-├── .env.example
-│
-├── agent/
-│   ├── pipeline.py       # LangGraph StateGraph: the 5-phase pipeline
-│   ├── llm_client.py     # make_chat_model() → LangChain chat model (Anthropic/Groq/Azure)
-│   ├── tools.py          # ToolExecutor + make_tools() LangChain @tool wrappers (the ACI)
-│   ├── github_client.py  # Issue fetching, repo cloning, branch management
-│   ├── indexer.py        # Symbol + PR-example index construction
-│   ├── retrieval.py      # BM25 retrieval over the index
-│   ├── repomap.py        # Lightweight repo map for localization
-│   └── go_utils.py       # Go toolchain (local or Docker) + git worktrees
-│
-├── prompts/              # Phase-specific prompts (loaded at runtime)
-│   ├── system.md
-│   ├── localize_deep.md  # primary localization prompt
-│   ├── localize.md       # fallback localization prompt
-│   ├── plan.md
-│   ├── patch_candidate.md
-│   ├── patch.md
-│   └── validate.md
-│
-├── rules/                # Project-specific conventions
-│   ├── cobra.md
-│   ├── gin.md
-│   ├── validator.md
-│   └── golangci-lint.md
-│
-├── indexes/
-│   └── spf13_cobra/      # Pre-built index shipped for cobra
-│
-└── sample_outputs/
-    └── cobra_issue_2396.md
-```
-
----
-
-## How It Compares to Other Systems
-
-The architecture borrows deliberately:
-
-| System | Inspiration taken |
-|--------|------------------|
-| [Agentless](https://github.com/OpenAutoCoder/Agentless) | Fixed phases + sampling multiple patches and ranking by tests |
-| [SWE-agent](https://github.com/SWE-agent/SWE-agent) | ACI-style tools built for LLMs (not raw bash), with informative errors |
-| [AutoCodeRover](https://github.com/AutoCodeRoverSG/auto-code-rover) | Structure-first localization over an AST-aware symbol index |
-| [Aider](https://aider.chat) | Repo map concept; project conventions as explicit rules |
-
-The bet: a focused, readable pipeline that evaluators can understand and extend beats a
-feature-complete but opaque autonomous agent.
-
----
-
-## Extending the System
-
-### Add rules for a new repository
-
-Create `rules/{repo-name}.md` following `rules/cobra.md`: package structure, error handling,
-test style, naming, and what to avoid.
-
-### Add a new tool
-
-1. Add a `_tool_{name}` method to `ToolExecutor` in `agent/tools.py`.
-2. Expose it as a `@tool` inside `make_tools()` (it's automatically given to the patch
-   and self-heal agents).
-3. Document it in `prompts/patch_candidate.md`.
-
-### Change the model
-
-Pass `--model claude-opus-4-8` for higher quality on complex issues, or
-`claude-haiku-4-5-20251001` for speed.
-
----
+Convention rules ship for `spf13/cobra`, `gin-gonic/gin`, `go-playground/validator`, and
+`golangci/golangci-lint`; pre-built indexes ship for cobra and validator. Build an index for
+any other Go repo with `python build_index.py --repo <owner/name>`. Works on any Go repository.
 
 ## Limitations
 
-- **Sequential phases**: an error in an early phase (e.g. localization) cascades. Each phase
-  has a fallback, but there is no global retry across phases.
-- **Repo map is size-capped**: very large repos (e.g. golangci-lint) have their repo map
-  truncated; localization there leans more on BM25 retrieval than the map.
-- **Runs untrusted code**: `go test` executes the target repo's test code. Prefer the Docker
-  path for isolation when running against unfamiliar repos.
-- **No browser/web access**: issues that link to external docs are handled from the model's
-  training knowledge only.
-- **Go only**: tool restrictions and rules are Go-specific.
+- **Go only** — tools, rules, and parsing are Go-specific.
+- **Runs untrusted code** — executes the target repo's `go test`; the Docker path isolates it.
+- **Large repos** — the repo map is size-capped, so localization leans more on retrieval there.
+
+---
+
+See **[ARCHITECTURE.md](ARCHITECTURE.md)** for the pipeline design, the reproduction oracle,
+retrieval/indexing, and how it compares to Agentless / SWE-agent / AutoCodeRover / Aider.
