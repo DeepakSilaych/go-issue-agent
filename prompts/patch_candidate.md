@@ -24,7 +24,7 @@ You are implementing a specific code fix. This is candidate {candidate_id} of {t
 ## Precise Edit Locations
 
 {edit_locations}
-
+{repro_instruction}
 ## Task
 
 Implement the fix using tools. Candidate {candidate_id} should follow the strategy above.

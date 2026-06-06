@@ -125,6 +125,14 @@ class Localization(BaseModel):
     reasoning: str = ""
 
 
+class ReproTest(BaseModel):
+    """A fail-to-pass reproduction test for the issue."""
+    file: str = ""
+    test_name: str = ""
+    package: str = ""
+    code: str = ""
+
+
 # ---------------------------------------------------------------------------
 # Graph state
 # ---------------------------------------------------------------------------
@@ -157,6 +165,11 @@ class PipelineState(TypedDict, total=False):
     file_contents: str
     fix_plan: str
     edit_locations_text: str
+    # reproduction-test oracle
+    repro_valid: bool
+    repro_file: str
+    repro_name: str
+    repro_code: str
     # per-candidate (carried in Send payloads)
     candidate_id: int
     strategy: str
@@ -455,6 +468,48 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
         print(f"\n{text[:800]}...\n" if len(text) > 800 else f"\n{text}\n")
         return {"fix_plan": text}
 
+    # ---- Reproduce: generate a fail->pass test BEFORE the fix -----------
+    def reproduce(state: PipelineState) -> dict:
+        if not _tests_enabled():
+            return {"repro_valid": False}  # need Go to verify F->P; skip in lean mode
+        issue = state["issue"]
+        print("\n[reproduce] Generating a fail→pass reproduction test...")
+        prompt = _load_prompt("reproduce").format(
+            issue_title=issue.title, issue_url=issue.url,
+            issue_body=issue.body or "(no body)",
+            file_contents=state["file_contents"], fix_plan=state["fix_plan"],
+        )
+        try:
+            rt = llm.with_structured_output(ReproTest).invoke([HumanMessage(content=prompt)])
+        except Exception as e:
+            print(f"  repro generation failed ({type(e).__name__}); continuing without oracle.")
+            return {"repro_valid": False}
+
+        if not rt.test_name.strip() or not rt.code.strip():
+            print("  No reproduction test produced (non-testable issue?).")
+            return {"repro_valid": False}
+
+        repro_file = rt.file.strip() or f"repro_issue_{issue.number}_test.go"
+        # Verify it FAILS on the current (unfixed) code, in a throwaway worktree.
+        try:
+            with Worktree(state["repo_path"], "repro-verify") as wt:
+                (Path(wt) / repro_file).write_text(rt.code, encoding="utf-8")
+                passed, output = go_test(wt, run_pattern=rt.test_name)
+        except Exception as e:
+            print(f"  repro verify errored ({type(e).__name__}); continuing without oracle.")
+            return {"repro_valid": False}
+
+        compile_err = "[build failed]" in output or "build failed" in output
+        if passed:
+            print(f"  Repro test {rt.test_name} PASSES on unfixed code — not a valid reproduction.")
+            return {"repro_valid": False}
+        if compile_err:
+            print(f"  Repro test {rt.test_name} does not compile — discarding.")
+            return {"repro_valid": False}
+        print(f"  ✓ Repro test {rt.test_name} FAILS on unfixed code (valid fail→pass oracle).")
+        return {"repro_valid": True, "repro_file": repro_file,
+                "repro_name": rt.test_name, "repro_code": rt.code}
+
     # ---- Explain mode: synthesize a reviewer-facing explanation --------
     def explain(state: PipelineState) -> dict:
         issue = state["issue"]
@@ -543,6 +598,10 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
                 "prs_text": state["prs_text"],
                 "project_rules": state["project_rules"],
                 "repo_path": state["repo_path"],
+                "repro_valid": state.get("repro_valid", False),
+                "repro_file": state.get("repro_file", ""),
+                "repro_name": state.get("repro_name", ""),
+                "repro_code": state.get("repro_code", ""),
             })
             for i in range(NUM_CANDIDATES)
         ]
@@ -552,7 +611,23 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
         issue = state["issue"]
         print(f"  Starting candidate {cid}...")
 
+        repro_valid = state.get("repro_valid", False)
+        repro_file = state.get("repro_file", "")
+        repro_name = state.get("repro_name", "")
+        repro_code = state.get("repro_code", "")
+
         with Worktree(state["repo_path"], f"candidate-{cid}") as wt:
+            # Pre-write the failing reproduction test so the agent fixes against it (TDD).
+            if repro_valid:
+                (Path(wt) / repro_file).write_text(repro_code, encoding="utf-8")
+            repro_instruction = (
+                f"\n## Reproduction Test (already added)\n"
+                f"A failing test `{repro_name}` has been added in `{repro_file}`. It currently FAILS "
+                f"and asserts the correct behaviour. Make the SOURCE change so `go test -run {repro_name} "
+                f"./...` passes. Do NOT modify or weaken the reproduction test.\n"
+                if repro_valid else ""
+            )
+
             agent = create_react_agent(llm, make_tools(wt))
             prompt = _load_prompt("patch_candidate").format(
                 candidate_id=cid,
@@ -564,6 +639,7 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
                 candidate_strategy=state["strategy"],
                 similar_prs=state["prs_text"],
                 edit_locations=state["edit_locations_text"],
+                repro_instruction=repro_instruction,
             )
             status = "incomplete"
             messages = [SystemMessage(content=system_prompt), HumanMessage(content=prompt)]
@@ -588,8 +664,15 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
             except Exception as e:
                 status = f"error: {type(e).__name__}: {e}"[:80]
 
+            # Anti-tamper: restore our canonical reproduction test, then check fail→pass.
+            repro_pass = False
+            if repro_valid:
+                (Path(wt) / repro_file).write_text(repro_code, encoding="utf-8")
+                repro_pass, _ = go_test(wt, run_pattern=repro_name)
+
             diff = get_diff(wt)
-            print(f"    [C{cid}] Finished — diff {len(diff)} bytes — {status}")
+            repro_tag = f"  repro={'PASS' if repro_pass else 'FAIL'}" if repro_valid else ""
+            print(f"    [C{cid}] Finished — diff {len(diff)} bytes — {status}{repro_tag}")
 
             tests_pass, test_output = False, ""
             if _tests_enabled() and diff != "(no changes)":
@@ -601,25 +684,31 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
             "tests_pass": tests_pass,
             "test_output": test_output[:2000],
             "status": status,
+            "repro_pass": repro_pass,
         }]}
 
     def select_patch(state: PipelineState) -> dict:
         results = state.get("candidates", [])
+        repro_valid = state.get("repro_valid", False)
         for r in results:
             src = "src" if _has_source_edit(r["diff"]) else "test-only"
+            rp = f"  repro={'PASS' if r.get('repro_pass') else 'FAIL'}" if repro_valid else ""
             print(f"  Candidate {r['candidate_id']}: {r['status']}  "
-                  f"tests={'PASS' if r['tests_pass'] else 'FAIL'}  edit={src}")
+                  f"tests={'PASS' if r['tests_pass'] else 'FAIL'}  edit={src}{rp}")
 
         with_changes = [r for r in results if r["diff"] != "(no changes)"]
         if with_changes:
-            # Rank: tests pass first, then a real SOURCE edit (a fix must change source,
-            # not just add a test), then the smallest diff.
+            # Rank: reproduction test passes first (the real fix-verified signal), then the
+            # existing suite passes, then a real SOURCE edit, then the smallest diff.
             best = min(with_changes, key=lambda r: (
+                not r.get("repro_pass", False),
                 not r["tests_pass"],
                 not _has_source_edit(r["diff"]),
                 len(r["diff"]),
             ))
             why = []
+            if repro_valid:
+                why.append("repro PASS" if best.get("repro_pass") else "repro FAIL")
             if best["tests_pass"]:
                 why.append("tests pass")
             why.append("source edit" if _has_source_edit(best["diff"]) else "TEST-ONLY (no source change!)")
@@ -638,6 +727,9 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
         if best["diff"] != "(no changes)" and not applied:
             print("  WARNING: best candidate diff did not apply cleanly.")
         best = {**best, "applied": applied}
+        if state.get("repro_valid"):
+            print(f"  Reproduction test {state.get('repro_name')}: "
+                  f"{'PASS — issue fixed ✓' if best.get('repro_pass') else 'FAIL — not verified fixed'}")
         return {"best_candidate": best,
                 "tests_pass": best["tests_pass"],
                 "test_output": best.get("test_output", "")}
@@ -727,6 +819,9 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
             "vet_ok": state.get("vet_ok"),
             "vet_output": state.get("vet_output", ""),
             "diff_applied": best.get("applied", diff != "(no changes)"),
+            "repro_valid": bool(state.get("repro_valid")),
+            "repro_test": state.get("repro_name", ""),
+            "repro_pass": bool(best.get("repro_pass")) if state.get("repro_valid") else None,
             "pr_summary": pr_summary,
             "candidate_id": best.get("candidate_id", 0),
         }
@@ -761,12 +856,14 @@ def build_graph(provider: str, model: str, mode: str = "implement"):
         return g.compile()
 
     # mode == "implement"
+    g.add_node("reproduce", reproduce)
     g.add_node("patch_candidate", patch_candidate)
     g.add_node("select_patch", select_patch)
     g.add_node("validate", validate)
     g.add_node("self_heal", self_heal)
     g.add_node("summary", summary)
-    g.add_conditional_edges("plan", route_to_candidates, ["patch_candidate"])
+    g.add_edge("plan", "reproduce")
+    g.add_conditional_edges("reproduce", route_to_candidates, ["patch_candidate"])
     g.add_edge("patch_candidate", "select_patch")
     g.add_edge("select_patch", "validate")
     g.add_conditional_edges("validate", should_heal, {"self_heal": "self_heal", "summary": "summary"})
