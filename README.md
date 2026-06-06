@@ -265,11 +265,24 @@ diffs are reproducible rather than cumulative.
   localized **77.8% → 92.6%**, recall **0.67 → 0.81** after fixes the eval itself surfaced.
   Reproduce with `python -m eval.swe_eval --provider <p>`.
 
-Reproduce the oracle demo:
+### Runbook — reproduce the oracle demos live
+
+Both are real `[Bug]` issues run at their **pre-fix commit** (so the fix isn't already there).
+Needs Go or Docker (for the fail→pass verification) and a provider key.
+
 ```bash
+# 1) cron validator accepts arbitrary strings (regex anchoring)
 python solve.py implement --issue 1576 --repo go-playground/validator \
-  --provider <anthropic|groq|azure> --base-commit <pre-fix sha>
+  --provider azure --base-commit 8eb2659789a33bda9262ce62eed2d714539dc8c5
+
+# 2) UUID validation fails for uppercase UUIDs (a-f -> a-fA-F)
+python solve.py implement --issue 1550 --repo go-playground/validator \
+  --provider azure --base-commit b9258bd2b7bbab41c3d99090cac4a659c5f1a60c
 ```
+
+Watch for: `✓ Repro test … FAILS on unfixed code` → `repro=PASS` on the candidates →
+`Reproduction test …: PASS — issue fixed ✓`. Captured transcripts:
+[#1576](sample_outputs/validator_issue_1576.md) · [#1550](sample_outputs/validator_issue_1550.md).
 
 ---
 
