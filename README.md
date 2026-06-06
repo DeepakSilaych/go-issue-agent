@@ -76,9 +76,9 @@ assumed). See [`sample_outputs/validator_issue_1576.md`](sample_outputs/validato
 and [`sample_outputs/validator_issue_1550.md`](sample_outputs/validator_issue_1550.md).
 
 For numbers, [`eval/SWE_RESULTS.md`](eval/SWE_RESULTS.md) reports 27 held-out cobra issues
-solved at their pre-fix commit and compared against the real merged PRs. File localization went
-from 78% to 93% after fixes the evaluation itself surfaced. Reproduce it with
-`python -m eval.swe_eval`.
+solved at their pre-fix commit and compared against the real merged PRs. It localizes the right
+file in 93% of cases and edits exactly the PR's file set in 67% (mean recall 0.81, precision
+0.90). Reproduce it with `python -m eval.swe_eval`.
 
 ## Supported repositories
 

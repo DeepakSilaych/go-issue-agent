@@ -151,24 +151,35 @@ def _report(results: list[dict]):
     (ROOT / "eval" / "swe_results.json").write_text(
         json.dumps({"aggregate": agg, "cases": results}, indent=2))
 
-    lines = ["# SWE-style Evaluation Results\n",
-             f"Cobra, {n} held-out cases (agent run at each pre-fix commit, diff vs. real PR).\n",
-             "## Aggregate\n",
-             "| metric | value |", "|---|---|"]
-    for k, v in agg.items():
-        lines.append(f"| {k} | {v} |")
-    lines += ["\n## Per-case\n",
-              "| issue | localized | recall | precision | exact-files | fix? | gold src | our src |",
-              "|---|---|---|---|---|---|---|---|"]
+    pct = lambda x: f"{round(x * 100)}%"
+    lines = [
+        "# SWE-style evaluation results\n",
+        f"{n} held-out cobra issues. For each already-fixed issue, the agent runs at the commit",
+        "before the fix landed, and its output is compared to the real merged PR. Config: 1",
+        "candidate, Go tests skipped, since this compares the diff against the gold PR rather than",
+        "running tests.\n",
+        "## Results\n",
+        "| metric | value |", "|---|---|",
+        f"| cases | {n} |",
+        f"| produced a fix | {pct(agg['produced_fix_rate'])} |",
+        f"| localized (edited a file the PR changed) | {pct(agg['localized_rate'])} |",
+        f"| exact file set (edited exactly the PR's Go files) | {pct(agg['exact_file_set_rate'])} |",
+        f"| mean file recall | {agg['mean_file_recall']} |",
+        f"| mean file precision | {agg['mean_file_precision']} |",
+        "\n## Per-case\n",
+        "| issue | localized | recall | precision | exact files | fix | gold src | our src |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    yn = lambda b: "yes" if b else "no"
     for r in sorted(results, key=lambda r: r.get("issue_number", 0)):
         lines.append(
-            f"| #{r.get('issue_number')} | {'✅' if r.get('localized') else '❌'} | "
+            f"| #{r.get('issue_number')} | {yn(r.get('localized'))} | "
             f"{r.get('file_recall')} | {r.get('file_precision')} | "
-            f"{'✅' if r.get('exact_file_set') else ''} | {'✅' if r.get('produced_fix') else '❌'} | "
+            f"{'yes' if r.get('exact_file_set') else ''} | {yn(r.get('produced_fix'))} | "
             f"{', '.join(r.get('gold_src_files', []))} | {', '.join(r.get('our_src_files', []))} |")
-    (ROOT / "eval" / "SWE_RESULTS.md").write_text("\n".join(lines))
+    (ROOT / "eval" / "SWE_RESULTS.md").write_text("\n".join(lines) + "\n")
 
-    print(f"\n{'='*70}\nAGGREGATE\n{'='*70}")
+    print(f"\n{'='*70}\nRESULTS\n{'='*70}")
     for k, v in agg.items():
         print(f"  {k:24s} {v}")
     print("\nWrote eval/swe_results.json and eval/SWE_RESULTS.md")
