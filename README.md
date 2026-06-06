@@ -99,9 +99,13 @@ Ships with project-specific convention rules (`rules/*.md`) for the four approve
 - `golangci/golangci-lint` — linter aggregator
 
 Works on any Go repository; the rules files improve output quality for the above.
-A **pre-built index for `spf13/cobra` ships in `indexes/spf13_cobra/`**, so the agent's
-symbol- and PR-retrieval work out of the box for cobra without any setup. For the other
-repos, build an index first (see below).
+**Pre-built indexes ship for `spf13/cobra` and `go-playground/validator`** (in `indexes/`),
+so symbol- and PR-retrieval work out of the box for both — no setup. For the other repos,
+build an index first (see below).
+
+> **Tip:** `validator` is the best repo for showing the reproduction-test oracle — its bugs
+> are pure functions, so a fail→pass test compiles first-try (see the demo above). `cobra` is
+> best for the localization/eval story (the shipped 27-case evaluation).
 
 ---
 
@@ -246,11 +250,26 @@ diffs are reproducible rather than cumulative.
 
 ---
 
-## Sample Output
+## Demos & Sample Output
 
-See [`sample_outputs/cobra_issue_2396.md`](sample_outputs/cobra_issue_2396.md) for an
-annotated walkthrough of the agent solving cobra#2396 (add a `NoDuplicateArgs` validator),
-showing each of the five phases and the resulting diff and PR summary.
+- **Reproduction-test oracle (real captured run):**
+  [`sample_outputs/validator_issue_1576.md`](sample_outputs/validator_issue_1576.md) —
+  the agent writes a test that **fails** on the buggy cron validator, fixes `regexes.go`,
+  and the test **passes** (`repro_pass: true`); it then picks the candidate that also keeps
+  the existing suite green. *"Actually solved, verified by a test the system wrote."*
+- **Annotated walkthrough:**
+  [`sample_outputs/cobra_issue_2396.md`](sample_outputs/cobra_issue_2396.md) — the five
+  phases on cobra#2396, end to end.
+- **Evaluation:** [`eval/SWE_RESULTS.md`](eval/SWE_RESULTS.md) — SWE-bench-style run over 27
+  held-out cobra issues (agent at the pre-fix commit vs. the real PR), with a before→after:
+  localized **77.8% → 92.6%**, recall **0.67 → 0.81** after fixes the eval itself surfaced.
+  Reproduce with `python -m eval.swe_eval --provider <p>`.
+
+Reproduce the oracle demo:
+```bash
+python solve.py implement --issue 1576 --repo go-playground/validator \
+  --provider <anthropic|groq|azure> --base-commit <pre-fix sha>
+```
 
 ---
 
